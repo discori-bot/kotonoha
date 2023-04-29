@@ -1,17 +1,19 @@
-import { REST, Routes } from 'discord.js';
+import { Client, Collection, REST, Routes } from 'discord.js';
 import dotenv from 'dotenv';
 import loadCommands from './loaders/command';
 import loadEvents from './loaders/events';
-import Bot from './types/bot';
 import getRequiredEnv from './utils/getRequiredEnv';
+import type Command from './types/command';
 
 dotenv.config();
 
 const start = async () => {
   const token = getRequiredEnv('TOKEN');
 
-  const client = new Bot({ intents: [] });
+  const client = new Client({ intents: [] });
   const rest = new REST().setToken(token);
+
+  client.commands = new Collection<string, Command>();
 
   loadCommands((command) => {
     client.commands.set(command.command.name, command);
