@@ -4,10 +4,8 @@
   "description": "A Discord bot to help you learn Japanese!",
   "main": "index.js",
   "scripts": {
-    "start:prod": "node dist/index.js",
-    "build:prod": "tsc --project tsconfig.json && resolve-tspaths --project tsconfig.json",
-    "start:dev": "node -r tsconfig-paths/register dist/index.js",
-    "build:dev": "tsc --project tsconfig.json --watch",
+    "start": "node dist/index.js",
+    "build:watch": "tsc --watch --project tsconfig.json",
     "lint": "eslint \"**/*.ts\" --quiet --fix",
     "format": "prettier --write \"**/*.{ts,json,md}\" --ignore-path .gitignore"
   },
@@ -17,14 +15,12 @@
     "@types/node": "^18.16.3",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "concurrently": "^8.0.1",
     "eslint": "^8.39.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript-base": "^4.0.2",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.25.2",
     "prettier": "^2.8.8",
-    "resolve-tspaths": "^0.8.13",
     "typescript": "^5.0.4"
   },
   "dependencies": {
