@@ -1,31 +1,39 @@
-import { type Interaction } from 'discord.js';
-import { Message } from 'discord.js';
-import type BotEvent from '../types/event';
+import { type Message, type CommandInteraction } from 'discord.js';
 import minimist from 'minimist';
+import stringArgv from 'string-argv';
+import type Bot from '../types/bot';
+import type BotEvent from '../types/event';
 
 const PREFIX_LIST: Array<string> = ['[', '!'];
 
 const processMessage = (msg: string) => {
-  for (let prefix of PREFIX_LIST) {
+  for (const prefix of PREFIX_LIST) {
     if (msg.startsWith(prefix)) {
       return msg.slice(prefix.length).trim();
     }
   }
-}
+
+  return undefined;
+};
 
 const event: BotEvent = {
   name: 'messageCreate',
-  execute: async (msg: Interaction) => {
+  execute: async (bot: Bot, msg: Message) => {
+    const content = processMessage(msg.content);
+    if (content === undefined) return;
 
-    if (!(msg instanceof Message)) return;
+    const parts = content.split(' ');
+    if (parts.length === 0) return;
 
-    let content = processMessage(msg.content);
-    if (content == undefined) return;
+    const commandName = parts[0];
+    const command = bot.textCommands.get(commandName);
 
-    const command = await msg.client.textCommandMap.get(content);
-    const args = minimist(content);
+    if (command === undefined) return;
 
-    await command.execute(msg);
+    const rest = stringArgv(content.slice(commandName.length));
+    const args = minimist(rest);
+
+    await command.execute({} as CommandInteraction);
   },
 };
 
