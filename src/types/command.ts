@@ -3,6 +3,7 @@ import type { AutocompleteInteraction, CommandInteraction, SlashCommandBuilder }
 type Command = {
   autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>;
   command: SlashCommandBuilder;
+  cmdNames: string[];
   execute: (interaction: CommandInteraction) => Promise<void>;
 };
 
