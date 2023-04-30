@@ -1,9 +1,9 @@
-import { InteractionType, type Interaction, GatewayDispatchEvents } from 'discord.js';
+import { InteractionType, type Interaction } from 'discord.js';
 import type Bot from '../types/bot';
-import type EventHandler from '../types/event';
+import type BotEvent from '../types/event';
 
-const handler: EventHandler = {
-  events: [GatewayDispatchEvents.IntegrationCreate],
+const event: BotEvent = {
+  name: 'interactionCreate',
   execute: async (bot: Bot, interaction: Interaction) => {
     if (
       interaction.type !== InteractionType.ApplicationCommand &&
@@ -22,4 +22,4 @@ const handler: EventHandler = {
   },
 };
 
-export default handler;
+export default event;
