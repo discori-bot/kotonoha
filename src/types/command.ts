@@ -1,8 +1,10 @@
 import type Optional from './optional';
+import type Yaritori from './yaritori';
 import type {
   AutocompleteInteraction,
   Awaitable,
-  CommandInteraction,
+  ChatInputCommandInteraction,
+  Message,
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
@@ -17,7 +19,9 @@ type Command = {
    */
   | Optional<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
     | SlashCommandSubcommandsOnlyBuilder;
-  execute: (interaction: CommandInteraction) => Awaitable<void>;
+  execute: <T extends ChatInputCommandInteraction | Message>(
+    yaritori: Yaritori<T>,
+  ) => Awaitable<void>;
 };
 
 export default Command;
