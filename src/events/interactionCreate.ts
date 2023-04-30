@@ -14,8 +14,20 @@ const event: BotEvent = {
     const command = bot.commands.get(interaction.commandName);
     if (command === undefined) return;
 
+    if (interaction.commandName != 'repeat') {
+      let userData = bot.users.get(interaction.user.id);
+      if (userData == undefined) {
+        bot.users.set(interaction.user.id, { history: [command] });
+      } else if (userData['history'] == undefined) {
+        userData['history'] = [command];
+      } else {
+        if (userData['history'].push(command) > 10) {
+          userData['history'].shift();
+        }
+      }
+    }
     if (interaction.isChatInputCommand()) {
-      await command.execute(interaction);
+      await command.execute(interaction, bot);
     } else if (interaction.isAutocomplete()) {
       await command.autocomplete?.(interaction);
     }

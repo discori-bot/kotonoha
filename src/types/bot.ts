@@ -5,6 +5,7 @@ type Bot = {
   client: Client;
   commands: Collection<string, Command>;
   textCommands: Collection<string, Command>;
+  users: Collection<string, { history: Command[] }>;
 };
 
 export default Bot;

@@ -10,7 +10,6 @@ const loadCommands = (onLoad: (command: Command) => void) => {
 
     const filePath = path.join(commandsDir, file);
     const command = (require(filePath) as { default: Command }).default;
-
     onLoad(command);
   });
 };

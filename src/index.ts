@@ -20,6 +20,7 @@ const start = async () => {
     }),
     commands: new Collection<string, Command>(),
     textCommands: new Collection<string, Command>(),
+    users: new Collection<string, { history: Command[] }>(),
   };
 
   const token = getRequiredEnv('TOKEN');
@@ -52,3 +53,4 @@ const start = async () => {
 };
 
 void start();
+  

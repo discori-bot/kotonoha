@@ -1,4 +1,5 @@
 import type Optional from './optional';
+import type Bot from './bot';
 import type {
   AutocompleteInteraction,
   Awaitable,
@@ -17,7 +18,7 @@ type Command = {
    */
   | Optional<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
     | SlashCommandSubcommandsOnlyBuilder;
-  execute: (interaction: CommandInteraction) => Awaitable<void>;
+  execute: (interaction: CommandInteraction, bot: Bot) => Awaitable<void>;
 };
 
 export default Command;

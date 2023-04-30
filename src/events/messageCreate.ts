@@ -30,10 +30,22 @@ const event: BotEvent = {
 
     if (command === undefined) return;
 
+    let userData = bot.users.get(msg.author.id);
+    if (commandName != '!!') {
+      if (userData == undefined) {
+        bot.users.set(msg.author.id, { history: [command] });
+      } else if (userData['history'] == undefined) {
+        userData['history'] = [command];
+      } else {
+        if (userData['history'].push(command) > 10) {
+          userData['history'].shift();
+        }
+      }
+    }
     const rest = stringArgv(content.slice(commandName.length));
     const args = minimist(rest);
 
-    await command.execute({} as CommandInteraction);
+    await command.execute({} as CommandInteraction, bot);
   },
 };
 
