@@ -1,7 +1,7 @@
 import { Client, Collection, REST, Routes } from 'discord.js';
 import dotenv from 'dotenv';
 import loadCommands from './loaders/command';
-import loadEvents from './loaders/events';
+import loadEvents from './loaders/event';
 import getRequiredEnv from './utils/getRequiredEnv';
 import type Command from './types/command';
 
