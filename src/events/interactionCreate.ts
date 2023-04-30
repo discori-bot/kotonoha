@@ -1,13 +1,17 @@
-import { type Interaction } from 'discord.js';
-import { CommandInteraction } from 'discord.js';
-import type BotEvent from '../types/event';
+import { InteractionType, type Interaction, GatewayDispatchEvents } from 'discord.js';
+import type Bot from '../types/bot';
+import type EventHandler from '../types/event';
 
-const event: BotEvent = {
-  name: 'interactionCreate',
-  execute: async (interaction: Interaction) => {
-    if (!(interaction instanceof CommandInteraction)) return;
+const handler: EventHandler = {
+  events: [GatewayDispatchEvents.IntegrationCreate],
+  execute: async (bot: Bot, interaction: Interaction) => {
+    if (
+      interaction.type !== InteractionType.ApplicationCommand &&
+      interaction.type !== InteractionType.ApplicationCommandAutocomplete
+    )
+      return;
 
-    const command = interaction.client.commands.get(interaction.commandName);
+    const command = bot.commands.get(interaction.commandName);
     if (command === undefined) return;
 
     if (interaction.isChatInputCommand()) {
@@ -18,4 +22,4 @@ const event: BotEvent = {
   },
 };
 
-export default event;
+export default handler;

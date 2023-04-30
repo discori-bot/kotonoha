@@ -1,11 +1,12 @@
-import type BotEvent from '../types/event';
+import { GatewayDispatchEvents } from 'discord.js';
+import type EventHandler from '../types/event';
 
-const event: BotEvent = {
-  name: 'ready',
+const handler: EventHandler = {
+  events: [GatewayDispatchEvents.Ready],
   once: true,
   execute: () => {
     console.log('[*] bot ready!');
   },
 };
 
-export default event;
+export default handler;
