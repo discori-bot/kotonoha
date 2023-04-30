@@ -1,4 +1,4 @@
-import { Client, Collection, REST, Routes, type ClientEvents } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, REST, Routes, type ClientEvents } from 'discord.js';
 import dotenv from 'dotenv';
 import loadCommands from './loaders/command';
 import loadEvents from './loaders/event';
@@ -11,8 +11,15 @@ dotenv.config();
 
 const start = async () => {
   const bot: Bot = {
-    client: new Client({ intents: [] }),
+    client: new Client({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+      ],
+    }),
     commands: new Collection<string, Command>(),
+    textCommands: new Collection<string, Command>(),
   };
 
   const token = getRequiredEnv('TOKEN');
@@ -20,6 +27,9 @@ const start = async () => {
 
   loadCommands((command) => {
     bot.commands.set(command.command.name, command);
+    for (const name of command.cmdNames) {
+      bot.textCommands.set(name, command);
+    }
   });
 
   loadEvents((event) => {
