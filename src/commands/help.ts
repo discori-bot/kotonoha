@@ -1,7 +1,7 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import type Command from '../types/command';
 import { EMBED_NEUTRAL_COLOR } from '../common/constants';
 import embed from '../pages/helpAll';
+import type Command from '../types/command';
 
 const description = 'Get description for the previous command or show a list of commands.';
 
@@ -9,7 +9,7 @@ const command: Command = {
   id: 'help',
   command: new SlashCommandBuilder().setName('help').setDescription(description),
   cmdNames: ['help', 'h'],
-  description: description,
+  description,
 
   help: new EmbedBuilder()
     .setColor(EMBED_NEUTRAL_COLOR)
@@ -19,7 +19,7 @@ const command: Command = {
   execute: async (interaction, bot) => {
     const userData = bot.users.get(interaction.user.id);
     const history = userData?.history;
-    if (history == undefined || history.length <= 1) {
+    if (history === undefined || history.length <= 1) {
       await interaction.reply({
         embeds: [embed],
       });

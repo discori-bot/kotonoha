@@ -1,5 +1,5 @@
-import type Optional from './optional';
 import type Bot from './bot';
+import type Optional from './optional';
 import type {
   AutocompleteInteraction,
   Awaitable,
@@ -11,8 +11,6 @@ import type {
 
 type Command = {
   autocomplete?: (interaction: AutocompleteInteraction) => Awaitable<void>;
-  cooldown?: number;
-  id: string;
   cmdNames: string[];
   command: /**
    * Discord.js removes the both of these functions whenever
@@ -20,9 +18,11 @@ type Command = {
    */
   | Optional<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
     | SlashCommandSubcommandsOnlyBuilder;
+  cooldown?: number;
   description: string;
-  help: EmbedBuilder;
   execute: (interaction: CommandInteraction, bot: Bot) => Awaitable<void>;
+  help: EmbedBuilder;
+  id: string;
 };
 
 export default Command;

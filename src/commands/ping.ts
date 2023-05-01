@@ -1,6 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import type Command from '../types/command';
 import { EMBED_NEUTRAL_COLOR } from '../common/constants';
+import type Command from '../types/command';
 
 const description = "Shows the bot's ping";
 
@@ -8,7 +8,7 @@ const command: Command = {
   id: 'ping',
   command: new SlashCommandBuilder().setName('ping').setDescription(description),
   cmdNames: ['ping'],
-  description: description,
+  description,
   help: new EmbedBuilder()
     .setColor(EMBED_NEUTRAL_COLOR)
     .setTitle('Ping')

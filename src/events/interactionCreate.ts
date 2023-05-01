@@ -1,8 +1,8 @@
 import { Collection, InteractionType, type Interaction } from 'discord.js';
+import { DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
-import { DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 
 const event: BotEvent = {
   name: 'interactionCreate',
@@ -16,9 +16,9 @@ const event: BotEvent = {
     const command = bot.commands.get(interaction.commandName);
     if (command === undefined) return;
 
-    var userData = bot.users.get(interaction.user.id);
+    let userData = bot.users.get(interaction.user.id);
 
-    if (userData == undefined) {
+    if (userData === undefined) {
       userData = {
         history: [],
         cooldowns: new Collection<string, number>(),
@@ -26,9 +26,9 @@ const event: BotEvent = {
       bot.users.set(interaction.user.id, userData);
     }
 
-    if (interaction.commandName != 'repeat') {
-      if (userData['history'].push(command) > 10) {
-        userData['history'].shift();
+    if (interaction.commandName !== 'repeat') {
+      if (userData.history.push(command) > 10) {
+        userData.history.shift();
       }
     }
 
@@ -37,7 +37,7 @@ const event: BotEvent = {
 
     if (interaction.isChatInputCommand()) {
       const prevTimestamp = userData.cooldowns.get(command.id);
-      if (prevTimestamp != undefined) {
+      if (prevTimestamp !== undefined) {
         const expirationTime = prevTimestamp + cooldownDuration;
 
         if (now < expirationTime) {

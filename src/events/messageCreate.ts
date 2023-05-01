@@ -1,10 +1,10 @@
 import { type Message, type CommandInteraction, Collection } from 'discord.js';
 import minimist from 'minimist';
 import stringArgv from 'string-argv';
+import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
-import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 
 const processMessage = (msg: string) => {
   for (const prefix of PREFIX_LIST) {
@@ -30,9 +30,9 @@ const event: BotEvent = {
 
     if (command === undefined) return;
 
-    var userData = bot.users.get(msg.author.id);
+    let userData = bot.users.get(msg.author.id);
 
-    if (userData == undefined) {
+    if (userData === undefined) {
       userData = {
         history: [],
         cooldowns: new Collection<string, number>(),
@@ -40,9 +40,9 @@ const event: BotEvent = {
       bot.users.set(msg.author.id, userData);
     }
 
-    if (commandName != '!!') {
-      if (userData['history'].push(command) > 10) {
-        userData['history'].shift();
+    if (commandName !== '!!') {
+      if (userData.history.push(command) > 10) {
+        userData.history.shift();
       }
     }
 
@@ -50,7 +50,7 @@ const event: BotEvent = {
     const cooldownDuration = (command.cooldown ?? DEFAULT_COOLDOWN_DURATION) * 1000;
 
     const prevTimestamp = userData.cooldowns.get(command.id);
-    if (prevTimestamp != undefined) {
+    if (prevTimestamp !== undefined) {
       const expirationTime = prevTimestamp + cooldownDuration;
 
       if (now < expirationTime) {
