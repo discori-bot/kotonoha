@@ -2,7 +2,7 @@ import { Collection, InteractionType, type Interaction } from 'discord.js';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
-const DEFAULT_COOLDOWN_DURATION = 1;
+import { DEFAULT_COOLDOWN_DURATION } from './constants';
 
 const event: BotEvent = {
   name: 'interactionCreate',

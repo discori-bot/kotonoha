@@ -4,8 +4,7 @@ import stringArgv from 'string-argv';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
-const PREFIX_LIST: Array<string> = ['[', '!'];
-const DEFAULT_COOLDOWN_DURATION = 1;
+import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from './constants';
 
 const processMessage = (msg: string) => {
   for (const prefix of PREFIX_LIST) {
