@@ -10,15 +10,17 @@ import type {
 
 type Command = {
   autocomplete?: (interaction: AutocompleteInteraction) => Awaitable<void>;
+  cooldown?: number;
+  id: string;
   cmdNames: string[];
-
+  
   command: /**
-   * Discord.js removes the both of these functions whenever
-   * you add an option to the command.
-   */
-  | Optional<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
-    | SlashCommandSubcommandsOnlyBuilder;
-  execute: (interaction: CommandInteraction, bot: Bot) => Awaitable<void>;
+  * Discord.js removes the both of these functions whenever
+  * you add an option to the command.
+  */
+ | Optional<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
+ | SlashCommandSubcommandsOnlyBuilder;
+ execute: (interaction: CommandInteraction, bot: Bot) => Awaitable<void>;
 };
 
 export default Command;
