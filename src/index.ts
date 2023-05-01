@@ -6,6 +6,7 @@ import { type BotEventNames } from './types/event';
 import getRequiredEnv from './utils/getRequiredEnv';
 import type Bot from './types/bot';
 import type Command from './types/command';
+import type TempUserData from './types/tempUserData';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ const start = async () => {
     }),
     commands: new Collection<string, Command>(),
     textCommands: new Collection<string, Command>(),
-    users: new Collection<string, { history: Command[] }>(),
+    users: new Collection<string, TempUserData>(),
   };
 
   const token = getRequiredEnv('TOKEN');
@@ -53,4 +54,3 @@ const start = async () => {
 };
 
 void start();
-  

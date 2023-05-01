@@ -1,10 +1,11 @@
-import { type Message, type CommandInteraction } from 'discord.js';
+import { type Message, type CommandInteraction, Collection } from 'discord.js';
 import minimist from 'minimist';
 import stringArgv from 'string-argv';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
 const PREFIX_LIST: Array<string> = ['[', '!'];
+const DEFAULT_COOLDOWN_DURATION = 1;
 
 const processMessage = (msg: string) => {
   for (const prefix of PREFIX_LIST) {
@@ -30,18 +31,42 @@ const event: BotEvent = {
 
     if (command === undefined) return;
 
-    let userData = bot.users.get(msg.author.id);
+    var userData = bot.users.get(msg.author.id);
+
+    if (userData == undefined) {
+      userData = {
+        history: [command],
+        cooldowns: new Collection<string, number>(),
+      };
+      bot.users.set(msg.author.id, userData);
+    }
+
     if (commandName != '!!') {
-      if (userData == undefined) {
-        bot.users.set(msg.author.id, { history: [command] });
-      } else if (userData['history'] == undefined) {
-        userData['history'] = [command];
-      } else {
-        if (userData['history'].push(command) > 10) {
-          userData['history'].shift();
-        }
+      if (userData['history'].push(command) > 10) {
+        userData['history'].shift();
       }
     }
+
+    const now = Date.now();
+    const cooldownDuration = (command.cooldown ?? DEFAULT_COOLDOWN_DURATION) * 1000;
+
+    const prevTimestamp = userData.cooldowns.get(command.id);
+    if (prevTimestamp != undefined) {
+      const expirationTime = prevTimestamp + cooldownDuration;
+
+      if (now < expirationTime) {
+        const expiredTimestamp = Math.round(expirationTime / 1000);
+
+        await msg.reply({
+          content: `You are on cooldown for this command. You can use it again in <t:${expiredTimestamp}:R>.`,
+        });
+
+        return;
+      }
+    }
+    userData.cooldowns.set(command.id, now);
+    setTimeout(() => userData?.cooldowns.delete(command.id), cooldownDuration);
+
     const rest = stringArgv(content.slice(commandName.length));
     const args = minimist(rest);
 
