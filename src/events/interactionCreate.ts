@@ -2,7 +2,7 @@ import { Collection, InteractionType, type Interaction } from 'discord.js';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
-import { DEFAULT_COOLDOWN_DURATION } from './constants';
+import { DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 
 const event: BotEvent = {
   name: 'interactionCreate',
@@ -20,7 +20,7 @@ const event: BotEvent = {
 
     if (userData == undefined) {
       userData = {
-        history: [command],
+        history: [],
         cooldowns: new Collection<string, number>(),
       };
       bot.users.set(interaction.user.id, userData);

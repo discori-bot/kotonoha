@@ -4,7 +4,7 @@ import stringArgv from 'string-argv';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
-import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from './constants';
+import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 
 const processMessage = (msg: string) => {
   for (const prefix of PREFIX_LIST) {
@@ -34,7 +34,7 @@ const event: BotEvent = {
 
     if (userData == undefined) {
       userData = {
-        history: [command],
+        history: [],
         cooldowns: new Collection<string, number>(),
       };
       bot.users.set(msg.author.id, userData);
