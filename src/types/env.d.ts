@@ -1,5 +1,6 @@
 type Env = {
   CLIENT_ID: string;
+  INVITE_URL: string;
   TOKEN: string;
   TZ?: string;
 };
