@@ -12,7 +12,7 @@ const loadDictionary = async (path: string) => {
   const rl = readline.createInterface({ input: stream });
 
   for await (const row of rl) {
-    const [, term, reading, tags, deinflectors, popularity, definition, sequence, bigTags] =
+    const [term, reading, tags, deinflectors, definition, bigTags, link] =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       row.match(/"([^"]*)"|([^,]+)|(?<=,|^)(?=,|$)/g)!;
 
@@ -21,10 +21,9 @@ const loadDictionary = async (path: string) => {
       reading,
       tags: tags || null,
       deinflectors: deinflectors || null,
-      popularity: popularity || null,
       definition: (definition.startsWith('"') && definition.endsWith('"')) ? definition.slice(1, definition.length-1) : definition || null,
-      sequence: sequence || null,
       bigTags: bigTags || null,
+      link: link || null,
     };
 
     if (!dictionary.has(term)) {
