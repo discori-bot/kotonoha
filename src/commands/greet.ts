@@ -1,16 +1,26 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import type Command from '../types/command';
+import { EMBED_NEUTRAL_COLOR } from '../common/constants';
+import type { Command, Execute } from '../types/command';
+
+const description = 'Greets the user';
+
+const execute: Execute = async (interaction) => {
+  await interaction.reply({
+    embeds: [new EmbedBuilder().setTitle('Hello!').setDescription('Hey!')],
+  });
+};
 
 const command: Command = {
-  command: new SlashCommandBuilder().setName('greet').setDescription('Greets the user'),
+  id: 'greet',
+  command: new SlashCommandBuilder().setName('greet').setDescription(description),
   cmdNames: ['greet'],
-  execute: async (interaction) => {
-    await interaction.reply({
-      embeds: [new EmbedBuilder().setTitle('Hello!').setDescription('Hey!')],
-    });
+  description,
+  help: new EmbedBuilder()
+    .setColor(EMBED_NEUTRAL_COLOR)
+    .setTitle('Greet')
+    .setDescription(description),
 
-    await interaction.reply('follow up message!');
-  },
+  execute,
 };
 
 export default command;
