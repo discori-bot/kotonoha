@@ -2,7 +2,7 @@ import { readdirSync } from 'fs';
 import path from 'path';
 import { EmbedBuilder } from 'discord.js';
 import { EMBED_NEUTRAL_COLOR } from '../common/constants';
-import type Command from '../types/command';
+import type { Command } from '../types/command';
 
 const commands: Command[] = [];
 const commandsDir = path.join(__dirname, '../commands');

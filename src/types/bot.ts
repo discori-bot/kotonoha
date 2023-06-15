@@ -1,5 +1,5 @@
 import { type Client, type Collection } from 'discord.js';
-import type Command from './command';
+import type { Command } from './command';
 import type TempUserData from './tempUserData';
 
 type Bot = {

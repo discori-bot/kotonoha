@@ -11,7 +11,12 @@ import type {
   SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
 
-type Command = {
+export type Execute = <T extends ChatInputCommandInteraction | Message>(
+  yaritori: Yaritori<T>,
+  bot: Bot,
+) => Awaitable<void>;
+
+export type Command = {
   autocomplete?: (interaction: AutocompleteInteraction) => Awaitable<void>;
   cmdNames: string[];
   command: /**
@@ -22,11 +27,7 @@ type Command = {
     | SlashCommandSubcommandsOnlyBuilder;
   cooldown?: number;
   description: string;
-  execute: <T extends ChatInputCommandInteraction | Message>(
-    yaritori: Yaritori<T>,
-  ) => Awaitable<void>;
+  execute: Execute;
   help: EmbedBuilder;
   id: string;
 };
-
-export default Command;

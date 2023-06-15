@@ -11,6 +11,7 @@ import {
   type BaseMessageOptions,
   MessageFlags,
   type InteractionDeferReplyOptions,
+  type Client,
 } from 'discord.js';
 
 const DEFAULT_LOCALE = Locale.EnglishUS;
@@ -28,6 +29,22 @@ export type ReplyOptions = BaseMessageOptions & {
  */
 class Yaritori<T extends ChatInputCommandInteraction | Message> {
   constructor(private interaction: T) {}
+
+  /**
+   * Returns true if this Yaritori is a message command.
+   */
+  public isMessageCommand() {
+    if (this.interaction instanceof ChatInputCommandInteraction)
+      return false;
+    return true;
+  }
+
+  /**
+   * Returns true if this Yaritori is a slash command.
+   */
+  public isSlashCommand() {
+    return !this.isMessageCommand();
+  }
 
   /**
    * The ID of the underlying interaction/message.
@@ -70,6 +87,13 @@ class Yaritori<T extends ChatInputCommandInteraction | Message> {
    */
   public get channelId(): Snowflake {
     return this.interaction.channelId;
+  }
+
+  /**
+   * The client of this Yaritori.
+   */
+  public get client(): Client {
+    return this.interaction.client;
   }
 
   /**

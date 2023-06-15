@@ -54,7 +54,7 @@ const event: BotEvent = {
       }
       userData.cooldowns.set(command.id, now);
       setTimeout(() => userData?.cooldowns.delete(command.id), cooldownDuration);
-      await command.execute(new Yaritori(interaction));
+      await command.execute(new Yaritori(interaction), bot);
     } else if (interaction.isAutocomplete()) {
       await command.autocomplete?.(interaction);
     }

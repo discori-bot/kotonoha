@@ -5,7 +5,7 @@ import loadEvents from './loaders/event';
 import { type BotEventNames } from './types/event';
 import getRequiredEnv from './utils/getRequiredEnv';
 import type Bot from './types/bot';
-import type Command from './types/command';
+import type { Command } from './types/command';
 import type TempUserData from './types/tempUserData';
 
 dotenv.config();
