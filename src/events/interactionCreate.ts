@@ -1,5 +1,6 @@
 import { Collection, InteractionType, type Interaction } from 'discord.js';
 import { DEFAULT_COOLDOWN_DURATION } from '../common/constants';
+import Yaritori from '../types/yaritori';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
@@ -53,7 +54,7 @@ const event: BotEvent = {
       }
       userData.cooldowns.set(command.id, now);
       setTimeout(() => userData?.cooldowns.delete(command.id), cooldownDuration);
-      await command.execute(interaction, bot);
+      await command.execute(new Yaritori(interaction));
     } else if (interaction.isAutocomplete()) {
       await command.autocomplete?.(interaction);
     }

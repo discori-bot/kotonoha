@@ -1,7 +1,8 @@
-import { type Message, type CommandInteraction, Collection } from 'discord.js';
+import { type Message, Collection } from 'discord.js';
 import minimist from 'minimist';
 import stringArgv from 'string-argv';
 import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from '../common/constants';
+import Yaritori from '../types/yaritori';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
@@ -18,8 +19,8 @@ const processMessage = (msg: string) => {
 
 const event: BotEvent = {
   name: 'messageCreate',
-  execute: async (bot: Bot, msg: Message) => {
-    const content = processMessage(msg.content);
+  execute: async (bot: Bot, message: Message) => {
+    const content = processMessage(message.content);
     if (content === undefined) return;
 
     const parts = content.split(' ');
@@ -30,14 +31,14 @@ const event: BotEvent = {
 
     if (command === undefined) return;
 
-    let userData = bot.users.get(msg.author.id);
+    let userData = bot.users.get(message.author.id);
 
     if (userData === undefined) {
       userData = {
         history: [],
         cooldowns: new Collection<string, number>(),
       };
-      bot.users.set(msg.author.id, userData);
+      bot.users.set(message.author.id, userData);
     }
 
     if (commandName !== '!!') {
@@ -56,7 +57,7 @@ const event: BotEvent = {
       if (now < expirationTime) {
         const expiredTimestamp = Math.round(expirationTime / 1000);
 
-        await msg.reply({
+        await message.reply({
           content: `You are on cooldown for this command. You can use it again in <t:${expiredTimestamp}:R>.`,
         });
 
@@ -69,7 +70,7 @@ const event: BotEvent = {
     const rest = stringArgv(content.slice(commandName.length));
     const args = minimist(rest);
 
-    await command.execute({} as CommandInteraction, bot);
+    await command.execute(new Yaritori(message));
   },
 };
 

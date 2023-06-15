@@ -1,9 +1,11 @@
 import type Bot from './bot';
 import type Optional from './optional';
+import type Yaritori from './yaritori';
 import type {
   AutocompleteInteraction,
   Awaitable,
-  CommandInteraction,
+  ChatInputCommandInteraction,
+  Message,
   EmbedBuilder,
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
@@ -20,7 +22,9 @@ type Command = {
     | SlashCommandSubcommandsOnlyBuilder;
   cooldown?: number;
   description: string;
-  execute: (interaction: CommandInteraction, bot: Bot) => Awaitable<void>;
+  execute: <T extends ChatInputCommandInteraction | Message>(
+    yaritori: Yaritori<T>,
+  ) => Awaitable<void>;
   help: EmbedBuilder;
   id: string;
 };
