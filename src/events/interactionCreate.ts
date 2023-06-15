@@ -1,4 +1,5 @@
 import { InteractionType, type Interaction } from 'discord.js';
+import Yaritori from '../types/yaritori';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
@@ -15,7 +16,7 @@ const event: BotEvent = {
     if (command === undefined) return;
 
     if (interaction.isChatInputCommand()) {
-      await command.execute(interaction);
+      await command.execute(new Yaritori(interaction));
     } else if (interaction.isAutocomplete()) {
       await command.autocomplete?.(interaction);
     }

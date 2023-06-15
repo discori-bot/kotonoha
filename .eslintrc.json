@@ -36,6 +36,7 @@
       "error",
       { "prefer": "type-imports", "fixStyle": "inline-type-imports" }
     ],
+    "@typescript-eslint/no-dupe-class-members": "off",
     "no-restricted-syntax": [
       "error",
       {
