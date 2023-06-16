@@ -34,8 +34,7 @@ class Yaritori<T extends ChatInputCommandInteraction | Message> {
    * Returns true if this Yaritori is a message command.
    */
   public isMessageCommand() {
-    if (this.interaction instanceof ChatInputCommandInteraction)
-      return false;
+    if (this.interaction instanceof ChatInputCommandInteraction) return false;
     return true;
   }
 

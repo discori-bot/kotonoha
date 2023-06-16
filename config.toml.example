@@ -1,0 +1,10 @@
+botToken = ""
+clientID = ""
+inviteURL = ""
+
+[server]
+prefixList = ['[', '!']
+defaultCooldown = 1
+
+[color]
+embedColor = 0x0099ff # Sky Blue

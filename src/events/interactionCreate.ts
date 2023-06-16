@@ -1,9 +1,8 @@
+import { type JsonMap } from '@iarna/toml';
 import { Collection, InteractionType, type Interaction } from 'discord.js';
-import { DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 import Yaritori from '../types/yaritori';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
-
 
 const event: BotEvent = {
   name: 'interactionCreate',
@@ -34,7 +33,8 @@ const event: BotEvent = {
     }
 
     const now = Date.now();
-    const cooldownDuration = (command.cooldown ?? DEFAULT_COOLDOWN_DURATION) * 1000;
+    const cooldownDuration =
+      (command.cooldown ?? ((bot.configs.server as JsonMap).defaultCooldown as number)) * 1000;
 
     if (interaction.isChatInputCommand()) {
       const prevTimestamp = userData.cooldowns.get(command.id);

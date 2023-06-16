@@ -1,15 +1,15 @@
+import { type JsonMap } from '@iarna/toml';
 import { type Message, Collection } from 'discord.js';
 import minimist from 'minimist';
 import stringArgv from 'string-argv';
-import { PREFIX_LIST, DEFAULT_COOLDOWN_DURATION } from '../common/constants';
 import Yaritori from '../types/yaritori';
 import type Bot from '../types/bot';
 import type { Command } from '../types/command';
 import type BotEvent from '../types/event';
 import type TempUserData from '../types/tempUserData';
 
-const processMessage = (msg: string) => {
-  for (const prefix of PREFIX_LIST) {
+const processMessage = (bot: Bot, msg: string) => {
+  for (const prefix of (bot.configs.server as JsonMap).prefixList as string[]) {
     if (msg.startsWith(prefix)) {
       return msg.slice(prefix.length).trim();
     }
@@ -18,9 +18,10 @@ const processMessage = (msg: string) => {
   return undefined;
 };
 
-const checkCooldowns = (userData: TempUserData, command: Command) => {
+const checkCooldowns = (bot: Bot, userData: TempUserData, command: Command) => {
   const now = Date.now();
-  const cooldownDuration = (command.cooldown ?? DEFAULT_COOLDOWN_DURATION) * 1000;
+  const cooldownDuration =
+    (command.cooldown ?? ((bot.configs.server as JsonMap).defaultCooldown as number)) * 1000;
 
   const prevTimestamp = userData.cooldowns.get(command.id);
   if (prevTimestamp !== undefined) {
@@ -38,7 +39,7 @@ const checkCooldowns = (userData: TempUserData, command: Command) => {
 };
 
 const execute = async (bot: Bot, message: Message) => {
-  const content = processMessage(message.content);
+  const content = processMessage(bot, message.content);
   if (content === undefined) return;
 
   const parts = content.split(' ');
@@ -65,7 +66,7 @@ const execute = async (bot: Bot, message: Message) => {
     }
   }
 
-  const cooldown = checkCooldowns(userData, command);
+  const cooldown = checkCooldowns(bot, userData, command);
   if (cooldown > 0) {
     await message.reply({
       content: `You are on cooldown for this command. You can use it again in <t:${cooldown}:R>.`,

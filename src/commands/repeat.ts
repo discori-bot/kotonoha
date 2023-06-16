@@ -1,5 +1,4 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { EMBED_NEUTRAL_COLOR } from '../common/constants';
 import type { Command, Execute } from '../types/command';
 
 const description = 'Repeat the last command you entered.';
@@ -17,12 +16,7 @@ const command: Command = {
   command: new SlashCommandBuilder().setName('repeat').setDescription(description),
   cmdNames: ['!!'],
   description,
-
-  help: new EmbedBuilder()
-    .setColor(EMBED_NEUTRAL_COLOR)
-    .setTitle('Repeat')
-    .setDescription(description),
-
+  help: new EmbedBuilder().setTitle('Repeat').setDescription(description),
   execute,
 };
 
