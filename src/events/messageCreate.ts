@@ -1,6 +1,7 @@
 import { type Message, type CommandInteraction } from 'discord.js';
 import minimist from 'minimist';
 import stringArgv from 'string-argv';
+import Yaritori from '../types/yaritori';
 import type Bot from '../types/bot';
 import type BotEvent from '../types/event';
 
@@ -18,8 +19,8 @@ const processMessage = (msg: string) => {
 
 const event: BotEvent = {
   name: 'messageCreate',
-  execute: async (bot: Bot, msg: Message) => {
-    const content = processMessage(msg.content);
+  execute: async (bot: Bot, message: Message) => {
+    const content = processMessage(message.content);
     if (content === undefined) return;
 
     const parts = content.split(' ');
@@ -33,7 +34,7 @@ const event: BotEvent = {
     const rest = stringArgv(content.slice(commandName.length));
     const args = minimist(rest);
 
-    await command.execute({} as CommandInteraction);
+    await command.execute(new Yaritori(message));
   },
 };
 

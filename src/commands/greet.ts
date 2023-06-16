@@ -8,6 +8,8 @@ const command: Command = {
     await interaction.reply({
       embeds: [new EmbedBuilder().setTitle('Hello!').setDescription('Hey!')],
     });
+
+    await interaction.reply('follow up message!');
   },
 };
 
