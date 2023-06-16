@@ -1,5 +1,6 @@
 import { Client, Collection, GatewayIntentBits, REST, Routes, type ClientEvents } from 'discord.js';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
 import loadCommands from './loaders/command';
 import loadEvents from './loaders/event';
 import { type BotEventNames } from './types/event';
@@ -20,6 +21,7 @@ const start = async () => {
       ],
     }),
     commands: new Collection<string, Command>(),
+    database: new Pool(),
     textCommands: new Collection<string, Command>(),
     users: new Collection<string, TempUserData>(),
   };
