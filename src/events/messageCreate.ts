@@ -11,11 +11,11 @@ import type TempUserData from '../types/tempUserData';
 const processMessage = (msg: string) => {
   for (const prefix of PREFIX_LIST) {
     if (msg.startsWith(prefix)) {
-      return msg.slice(prefix.length).trim();
+      return [prefix, msg.slice(prefix.length).trim()];
     }
   }
 
-  return undefined;
+  return [undefined, undefined];
 };
 
 const checkCooldowns = (userData: TempUserData, command: Command) => {
@@ -38,7 +38,7 @@ const checkCooldowns = (userData: TempUserData, command: Command) => {
 };
 
 const execute = async (bot: Bot, message: Message) => {
-  const content = processMessage(message.content);
+  const [prefix, content] = processMessage(message.content);
   if (content === undefined) return;
 
   const parts = content.split(' ');
@@ -76,7 +76,7 @@ const execute = async (bot: Bot, message: Message) => {
   const rest = stringArgv(content.slice(commandName.length));
   const args = minimist(rest);
 
-  await command.execute(new Yaritori(message), bot);
+  await command.execute(new Yaritori(message), bot, args, prefix);
 };
 
 const event: BotEvent = {

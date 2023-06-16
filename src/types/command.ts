@@ -10,10 +10,13 @@ import type {
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
+import type { ParsedArgs } from 'minimist';
 
 export type Execute = <T extends ChatInputCommandInteraction | Message>(
   yaritori: Yaritori<T>,
   bot: Bot,
+  args?: ParsedArgs,
+  prefix?: string,
 ) => Awaitable<void>;
 
 export type Command = {
