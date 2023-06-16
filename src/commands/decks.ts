@@ -4,13 +4,72 @@ import type { Command, Execute } from '../types/command';
 
 const description = 'Shows a list of decks';
 
-const execute: Execute = async (interaction, bot) => {
-  const res = await bot.database.query('SELECT $1::text as message', ['Database queried!']);
-  console.log(res.rows[0]);
+const createDeck: Execute = async (interaction, bot) => {
+  const args = {
+    name: 'New Deck',
+    description: 'My New Deck',
+  };
+
+  await bot.database.query(
+    `INSERT INTO decks(user_id, name, description)
+    VALUES ($1, $2, $3)`,
+    [interaction.member?.user.id, args.name, args.description],
+  );
+};
+
+const readDeck: Execute = async (interaction, bot) => {
+  const embed = new EmbedBuilder().setTitle('Decks').setDescription(description);
+
+  const res = await bot.database.query(
+    `SELECT * FROM decks
+    WHERE is_prebuilt
+    OR user_id = $1
+    ORDER BY is_prebuilt, updated_at, name`,
+    [interaction.member?.user.id],
+  );
+
+  for (const { name, description: value } of res.rows) {
+    embed.addFields({ name, value, inline: true });
+  }
 
   await interaction.reply({
-    embeds: [new EmbedBuilder().setTitle('Decks').setDescription(description)],
+    embeds: [embed],
   });
+};
+
+const updateDeck: Execute = async (interaction, bot) => {
+  const args = {
+    name: 'Deck Name',
+    newName: 'New Deck Name',
+    newDescription: 'My New Deck Name',
+  };
+
+  await bot.database.query(
+    `UPDATE decks
+    SET name = $1,
+        description = $2,
+        updated_at = NOW()
+    WHERE user_id = $3
+    AND name = $4`,
+    [args.newName, args.newDescription, interaction.member?.user.id, args.name],
+  );
+};
+
+const deleteDeck: Execute = async (interaction, bot) => {
+  const args = {
+    name: 'Deck Name',
+  };
+
+  await bot.database.query(
+    `DELETE FROM decks
+    WHERE user_id = $1
+    AND name = $2`,
+    [interaction.member?.user.id, args.name],
+  );
+};
+
+const execute: Execute = (interaction, bot) => {
+  void readDeck(interaction, bot);
 };
 
 const command: Command = {
