@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "rootDir": "./",
+    "rootDir": "./src",
     "module": "CommonJS",
     "outDir": "./dist",
     "esModuleInterop": true,
@@ -10,5 +10,5 @@
     "useUnknownInCatchVariables": false,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*", "./ext/*", "./ext/**/*"]
+  "include": ["./src/**/*"]
 }
