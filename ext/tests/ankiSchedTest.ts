@@ -1,5 +1,5 @@
 import assert from 'assert';
-import Scheduler from '../ankiSched';
+import Scheduler from '../scheduler/ankiSched';
 
 // Test 1
 const card1 = new Scheduler();

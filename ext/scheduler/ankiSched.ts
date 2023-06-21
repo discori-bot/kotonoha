@@ -3,7 +3,7 @@
  */
 
 import { type JsonMap } from '@iarna/toml';
-import loadConfigs from '../src/loaders/config';
+import loadConfigs from '../../src/loaders/config';
 
 type Status = 'learned' | 'learning' | 'relearning';
 
@@ -14,7 +14,9 @@ const configLapses = config.lapses as JsonMap;
 
 class Scheduler {
   static minuteToDays = (minutes: number) => minutes / (60 * 24);
-  
+
+  static DaysToMillis = (days: number) => days * (24 * 60 * 60 * 1000);
+
   static humanFriendlyTime = (days: number) => {
     if (days === null) return days;
     if (days < 1) return `${+(days * 24 * 60).toFixed(2)} minutes`;
@@ -43,7 +45,8 @@ class Scheduler {
       }
       if (response === 'good') {
         this.steps_index += 1;
-        if (this.steps_index < newSteps.length) return Scheduler.minuteToDays(newSteps[this.steps_index]);
+        if (this.steps_index < newSteps.length)
+          return Scheduler.minuteToDays(newSteps[this.steps_index]);
 
         // graduated
         this.status = 'learned';

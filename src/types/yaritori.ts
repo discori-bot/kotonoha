@@ -12,6 +12,8 @@ import {
   MessageFlags,
   type InteractionDeferReplyOptions,
   type Client,
+  type InteractionEditReplyOptions,
+  type MessagePayload,
 } from 'discord.js';
 
 const DEFAULT_LOCALE = Locale.EnglishUS;
@@ -160,6 +162,17 @@ class Yaritori<T extends ChatInputCommandInteraction | Message> {
           flags: MessageFlags.SuppressNotifications,
         });
       },
+    });
+  }
+
+  /**
+   * Edits the reply to the user.
+   * @warn only works for slash commands! will be a no-op when dealing with text commands.
+   */
+  public editReply(options: InteractionEditReplyOptions | MessagePayload | string) {
+    return this.if({
+      slashCommand: (interaction) => interaction.editReply(options),
+      textCommand: () => undefined,
     });
   }
 
