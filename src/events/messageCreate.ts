@@ -39,6 +39,8 @@ const checkCooldowns = (bot: Bot, userData: TempUserData, command: Command) => {
 };
 
 const execute = async (bot: Bot, message: Message) => {
+  if (message.author.bot) return;
+
   const content = processMessage(bot, message.content);
   if (content === undefined) return;
 
