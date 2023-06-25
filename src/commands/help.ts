@@ -1,5 +1,4 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { EMBED_NEUTRAL_COLOR } from '../common/constants';
 import embed from '../pages/helpAll';
 import type { Command, Execute } from '../types/command';
 
@@ -25,12 +24,7 @@ const command: Command = {
   command: new SlashCommandBuilder().setName('help').setDescription(description),
   cmdNames: ['help', 'h'],
   description,
-
-  help: new EmbedBuilder()
-    .setColor(EMBED_NEUTRAL_COLOR)
-    .setTitle('Help')
-    .setDescription(description),
-
+  help: new EmbedBuilder().setTitle('Help').setDescription(description),
   execute,
 };
 

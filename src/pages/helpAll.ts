@@ -1,7 +1,6 @@
 import { readdirSync } from 'fs';
 import path from 'path';
 import { EmbedBuilder } from 'discord.js';
-import { EMBED_NEUTRAL_COLOR } from '../common/constants';
 import type { Command } from '../types/command';
 
 const commands: Command[] = [];
@@ -16,7 +15,6 @@ readdirSync(commandsDir).forEach((file) => {
 });
 
 const embed = new EmbedBuilder()
-  .setColor(EMBED_NEUTRAL_COLOR)
   .setAuthor({ name: 'Discori', iconURL: 'https://i.postimg.cc/D0QcwWjv/Discori.png' })
   .setDescription('My commands:');
 for (const command of commands) {
