@@ -1,0 +1,11 @@
+botToken = "" # Bot's security token
+clientID = "" # Discord application's client ID
+inviteURL = "" # URL to invite the bot
+
+[server]
+commandCooldown = 1000 # Minimum time in ms before using the same command
+historySize = 10 # Number of user's previous commands to store
+prefixes = [ "[", "!" ] # List of valid bot prefixes
+
+[color]
+embedColor = 0x0099ff # Default embed color (Sky blue)
