@@ -6,23 +6,59 @@ import {
   type InteractionResponse,
 } from 'discord.js';
 import Scheduler from '../../ext/scheduler/ankiSched';
+import type Card from '../types/card';
 import type { Command, Execute } from '../types/command';
 import type Yaritori from '../types/yaritori';
 
-class Card extends Scheduler {
-  dueDate = Date.now();
+class AnkiCard extends Scheduler implements Card {
+  public dueDate: number;
+
+  public suspended: boolean;
+
+  public marked: boolean;
+
+  public buried: boolean;
+
+  public word: string;
 
   readonly meanings;
 
   constructor(word: string, meanings: object) {
     super();
+    this.dueDate = Date.now();
+    this.word = word;
     this.meanings = meanings;
+    this.suspended = false;
+    this.buried = false;
+    this.marked = false;
   }
 
   public answer(response: string) {
     const days = super.answer(response);
-    this.dueDate = Date.now() + Card.DaysToMillis(days);
+    this.dueDate = Date.now() + AnkiCard.DaysToMillis(days);
     return days;
+  }
+
+  public toggleBury() {
+    const waitTime = AnkiCard.DaysToMillis(1);
+    this.buried = !this.buried;
+
+    if (this.buried) {
+      this.dueDate += waitTime;
+      setTimeout(() => {
+        this.buried = false;
+      }, waitTime);
+    } else {
+      this.dueDate -= waitTime;
+    }
+  }
+
+  public toggleSuspend() {
+    this.suspended = !this.suspended;
+  }
+
+  public toggleMark() {
+    this.marked = !this.marked;
   }
 }
 
@@ -30,7 +66,7 @@ const description = 'Review your decks';
 
 const mockDueDate = new Date('Tue Jun 20 2023 17:10:24 GMT+0700 (Indochina Time)');
 
-const yomu = new Card('読む', {
+const yomu: Card = new AnkiCard('読む', {
   三省堂: `カシュー（名）〔cashew〕
 ①〘植〙西インド諸島などにはえる、ウルシに似た木。
 ②「カシュー①」の実から作る合成塗料(トリョウ)。`,
@@ -55,8 +91,46 @@ const replyOrEditCard = async <T extends Message | ChatInputCommandInteraction>(
   return replyMessage.edit({ embeds: [embed] });
 };
 
+const handleResponse = async <T extends Message | ChatInputCommandInteraction>(
+  interaction: Yaritori<T>,
+  card: Card,
+  response: string,
+  answersMap: Map<string, string>,
+) => {
+  if (response === 'bury') {
+    card?.toggleBury();
+    // Reply with the formatted dueDate for testing
+    if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+    return;
+  }
+
+  if (response === 'suspend') {
+    card?.toggleSuspend();
+    // Reply with the formatted dueDate for testing
+    if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+    return;
+  }
+
+  if (response === 'mark') {
+    card?.toggleMark();
+    // Reply with the formatted dueDate for testing
+    if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+    return;
+  }
+
+  let answer = response;
+  // Map the numbers 1, 2, 3, 4 to the responses 'again', 'hard', 'good', 'easy'
+  if (answersMap.has(answer)) {
+    answer = answersMap.get(answer) ?? '';
+  }
+
+  card?.answer(answer);
+  // Reply with the formatted dueDate for testing
+  if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+};
+
 const execute: Execute = async (interaction) => {
-  const dueCards = mockCards.filter((card) => Date.now() > card.dueDate);
+  const dueCards = mockCards.filter((card) => Date.now() > card.dueDate && !card.suspended);
   if (dueCards.length === 0) {
     await interaction.reply({
       embeds: [new EmbedBuilder().setTitle('Review').setDescription('No more to review!')],
@@ -64,11 +138,17 @@ const execute: Execute = async (interaction) => {
     return;
   }
 
-  const answers = { '1': 'again', '2': 'hard', '3': 'good', '4': 'easy' };
+  const answersMap = new Map([
+    ['1', 'again'],
+    ['2', 'hard'],
+    ['3', 'good'],
+    ['4', 'easy'],
+  ]);
 
   const filter = (message: Message) =>
-    Object.entries(answers).flat().includes(message.content.toLowerCase()) &&
-    message.author.id === interaction.user.id;
+    ['bury', 'mark', 'suspend', ...Array.from(answersMap.entries()).flat()].includes(
+      message.content.toLowerCase(),
+    ) && message.author.id === interaction.user.id;
 
   const collector = interaction.channel?.createMessageCollector({ filter, idle: 60000 });
 
@@ -81,12 +161,10 @@ const execute: Execute = async (interaction) => {
   reply = await replyOrEditCard(interaction, card, reply);
 
   collector?.on('collect', async (message) => {
-    let answer = message.content.toLowerCase();
-    if (answer in answers) {
-      answer = answers[answer as keyof typeof answers];
-    }
-    card?.answer(answer);
-    if (card?.dueDate) await interaction.reply((new Date(card.dueDate)).toString())
+    const response = message.content.toLowerCase();
+
+    if (card === undefined) return;
+    await handleResponse(interaction, card, response, answersMap);
     
     card = dueCards.shift();
     if (card === undefined) return;
