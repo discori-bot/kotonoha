@@ -1,17 +1,19 @@
+import { type JsonMap } from '@iarna/toml';
 import { Client, Collection, GatewayIntentBits, REST, Routes, type ClientEvents } from 'discord.js';
-import dotenv from 'dotenv';
-import { Pool } from 'pg';
 import loadCommands from './loaders/command';
+import loadConfigs from './loaders/config';
+import loadDatabase from './loaders/database';
 import loadEvents from './loaders/event';
 import { type BotEventNames } from './types/event';
-import getRequiredEnv from './utils/getRequiredEnv';
+import requireConfig from './utils/requireConfig';
 import type Bot from './types/bot';
 import type { Command } from './types/command';
 import type TempUserData from './types/tempUserData';
 
-dotenv.config();
-
 const start = async () => {
+  const configs = loadConfigs();
+  const database = loadDatabase(configs.database as JsonMap);
+
   const bot: Bot = {
     client: new Client({
       intents: [
@@ -21,13 +23,14 @@ const start = async () => {
       ],
     }),
     commands: new Collection<string, Command>(),
-    database: new Pool(),
+    configs,
+    database,
     textCommands: new Collection<string, Command>(),
     users: new Collection<string, TempUserData>(),
   };
 
-  const token = getRequiredEnv('TOKEN');
-  const rest = new REST().setToken(token);
+  const botToken = requireConfig(bot, 'botToken') as string;
+  const rest = new REST().setToken(botToken);
 
   loadCommands((command) => {
     bot.commands.set(command.command.name, command);
@@ -48,11 +51,12 @@ const start = async () => {
     }
   });
 
-  await rest.put(Routes.applicationCommands(getRequiredEnv('CLIENT_ID')), {
+  const clientID = requireConfig(bot, 'clientID') as string;
+  await rest.put(Routes.applicationCommands(clientID), {
     body: bot.commands.map((command) => command.command.toJSON()),
   });
 
-  return bot.client.login(token);
+  return bot.client.login(botToken);
 };
 
 void start();

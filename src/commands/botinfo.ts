@@ -1,12 +1,16 @@
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { EMBED_NEUTRAL_COLOR } from '../common/constants';
+import { type JsonMap } from '@iarna/toml';
+import { type ColorResolvable, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { Command, Execute } from '../types/command';
 
 const description = "Shows the bot's status";
 
-const execute: Execute = async (interaction) => {
+const execute: Execute = async (interaction, bot) => {
   const reply = await interaction.reply({
-    embeds: [new EmbedBuilder().setColor(EMBED_NEUTRAL_COLOR).setTitle('Pong!')],
+    embeds: [
+      new EmbedBuilder()
+        .setColor((bot.configs.color as JsonMap).embedColor as ColorResolvable)
+        .setTitle('Pong!'),
+    ],
   });
 
   const { uptime } = interaction.client;
@@ -19,7 +23,7 @@ const execute: Execute = async (interaction) => {
   const seconds = Math.floor(uptime / 1000) % 60;
 
   const embed = new EmbedBuilder()
-    .setColor(EMBED_NEUTRAL_COLOR)
+    .setColor((bot.configs.color as JsonMap).embedColor as ColorResolvable)
     .setTitle('Pong!')
     .addFields(
       {
@@ -46,11 +50,7 @@ const command: Command = {
   command: new SlashCommandBuilder().setName('status').setDescription(description),
   cmdNames: ['botinfo'],
   description,
-  help: new EmbedBuilder()
-    .setColor(EMBED_NEUTRAL_COLOR)
-    .setTitle('Bot Status')
-    .setDescription(description),
-
+  help: new EmbedBuilder().setTitle('Bot Status').setDescription(description),
   execute,
 };
 

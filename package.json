@@ -12,6 +12,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/iarna__toml": "^2.0.2",
     "@types/minimist": "^1.2.2",
     "@types/node": "^18.16.3",
     "@types/pg": "^8.10.2",
@@ -26,8 +27,8 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "discord.js": "^14.9.0",
-    "dotenv": "^16.0.3",
     "minimist": "^1.2.8",
     "pg": "^8.11.0",
     "string-argv": "^0.3.1"
