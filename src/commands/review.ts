@@ -6,59 +6,20 @@ import {
   type InteractionResponse,
 } from 'discord.js';
 import Scheduler from '../../ext/scheduler/ankiSched';
-import type Card from '../types/card';
 import type { Command, Execute } from '../types/command';
+import type Card from '../types/card';
 import type Yaritori from '../types/yaritori';
 
 class AnkiCard extends Scheduler implements Card {
-  public dueDate: number;
-
-  public suspended: boolean;
-
-  public marked: boolean;
-
-  public buried: boolean;
-
   public word: string;
 
   readonly meanings;
 
   constructor(word: string, meanings: object) {
     super();
-    this.dueDate = Date.now();
+
     this.word = word;
     this.meanings = meanings;
-    this.suspended = false;
-    this.buried = false;
-    this.marked = false;
-  }
-
-  public answer(response: string) {
-    const days = super.answer(response);
-    this.dueDate = Date.now() + AnkiCard.DaysToMillis(days);
-    return days;
-  }
-
-  public toggleBury() {
-    const waitTime = AnkiCard.DaysToMillis(1);
-    this.buried = !this.buried;
-
-    if (this.buried) {
-      this.dueDate += waitTime;
-      setTimeout(() => {
-        this.buried = false;
-      }, waitTime);
-    } else {
-      this.dueDate -= waitTime;
-    }
-  }
-
-  public toggleSuspend() {
-    this.suspended = !this.suspended;
-  }
-
-  public toggleMark() {
-    this.marked = !this.marked;
   }
 }
 
@@ -165,7 +126,7 @@ const execute: Execute = async (interaction) => {
 
     if (card === undefined) return;
     await handleResponse(interaction, card, response, answersMap);
-    
+
     card = dueCards.shift();
     if (card === undefined) return;
     reply = await replyOrEditCard(interaction, card, reply);
