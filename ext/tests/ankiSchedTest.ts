@@ -1,13 +1,13 @@
 import assert from 'assert';
 import Scheduler from '../scheduler/ankiSched';
-
+import * as utils from '../utils';
 // Test 1
 const card1 = new Scheduler();
 const sched1 = [];
 const responses1 = Array<string>(10).fill('good');
 for (const r of responses1) {
   const t = card1.answer(r);
-  sched1.push(Scheduler.humanFriendlyTime(t));
+  sched1.push(utils.humanFriendlyTime(t));
 }
 const expected1 = [
   '10 minutes',
@@ -29,7 +29,7 @@ const sched2 = [];
 const responses2 = ['good', 'good', 'good', 'again', 'good', 'hard', 'good', 'good', 'easy'];
 for (const r of responses2) {
   const t = card2.answer(r);
-  sched2.push(Scheduler.humanFriendlyTime(t));
+  sched2.push(utils.humanFriendlyTime(t));
 }
 const expected2 = [
   '10 minutes',
