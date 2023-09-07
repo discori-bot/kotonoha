@@ -6,8 +6,8 @@ import {
   type InteractionResponse,
 } from 'discord.js';
 import Scheduler from '../../ext/scheduler/ankiSched';
-import type { Command, Execute } from '../types/command';
 import type Card from '../types/card';
+import type { Command, Execute } from '../types/command';
 import type Yaritori from '../types/yaritori';
 
 class AnkiCard extends Scheduler implements Card {
