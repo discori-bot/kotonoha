@@ -10,6 +10,8 @@ interface Scheduler {
   dueDate: number;
 
   marked: boolean;
+  
+  reps: number;
 
   suspended: boolean;
 

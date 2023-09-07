@@ -1,19 +1,27 @@
-/**
+  /**
  * Implementation of https://gist.github.com/riceissa/1ead1b9881ffbb48793565ce69d7dbdd for Discori
  */
 
 import { type JsonMap } from '@iarna/toml';
-import loadConfigs from '../loaders/config';
+import loadConfigs from '../../src/loaders/config';
 import * as utils from '../utils';
 import SchedulerBase from './base';
 import type Scheduler from '../types/scheduler';
 
 type Status = 'learned' | 'learning' | 'relearning';
+type ActivationFunction = (input: number) => number;
+type RandomGenerator = () => number;
 
 const config = loadConfigs().schedulerSettings as JsonMap;
 const configNewCards = config.newCards as JsonMap;
 const configReviews = config.reviews as JsonMap;
 const configLapses = config.lapses as JsonMap;
+
+const calculateIntervalWithFuzz = (
+  interval: number,
+  activationFunction: ActivationFunction,
+  randomGenerator: RandomGenerator,
+) => interval + interval * activationFunction(interval) * randomGenerator();
 
 class AnkiScheduler extends SchedulerBase implements Scheduler {
   private status: Status = 'learning';
@@ -23,6 +31,8 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
   private ease_factor = configNewCards.startingEase as number;
 
   private interval = NaN;
+
+  reps = 0;
 
   private schedule(response: string) {
     const newSteps = configNewCards.newSteps as number[];
@@ -98,10 +108,19 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     throw new Error("status is not one of 'learning', 'learned' or 'relearning'");
   }
 
-  public answer(response: string) {
-    const days = this.schedule(response);
-    this.dueDate = Date.now() + utils.DaysToMillis(days);
-    return days;
+  public answer(response: string): number;
+  public answer(response: string, randomGenerator: RandomGenerator): number;
+  public answer(response: string, randomGenerator?: RandomGenerator) {
+    const fuzzApplied = config.calculateWithFuzz as boolean;
+    const activationFunction: ActivationFunction = (input: number) =>
+      0.15 / (input / 10 + 1) + 0.05;
+    const generator = randomGenerator || (() => Math.random() * 2 - 1);
+    const interval = fuzzApplied
+      ? calculateIntervalWithFuzz(this.schedule(response), activationFunction, generator)
+      : this.schedule(response);
+    this.reps += 1;
+    this.dueDate = Date.now() + utils.DaysToMillis(interval);
+    return interval;
   }
 }
 

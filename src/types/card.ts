@@ -1,8 +1,8 @@
 import type Scheduler from './scheduler';
 
 interface Card extends Scheduler {
-  word: string;
   meanings: object;
+  word: string;
 }
 
 export default Card;

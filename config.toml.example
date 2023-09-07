@@ -8,3 +8,22 @@ defaultCooldown = 1
 
 [color]
 embedColor = 0x0099ff # Sky Blue
+
+[schedulerSettings]
+    calculateWithFuzz = true
+    [schedulerSettings.newCards]
+    newSteps = [1, 10]
+     graduatingInterval = 1
+    easyInterval = 4
+    startingEase = 250
+
+    [schedulerSettings.reviews]
+    easyBonus = 130
+    intervalModifier = 100
+    maxInterval = 36500
+
+    [schedulerSettings.lapses]
+    lapsesSteps = [10]
+    newInterval = 70
+    minInterval = 1
+    leechThreshold = 8
