@@ -34,7 +34,7 @@ const calculateIntervalWithFuzz = (
 ) => interval + interval * activationFunction(interval) * randomGenerator();
 
 const deleteFromHistory = (history: SchedulingInformation[]) => history.pop();
-
+const shiftHistory = (history: SchedulingInformation[]) => history.shift();
 /**
  * Anki-based scheduler algorithm.
  */
@@ -56,11 +56,11 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
   /**
    * Initialize the scheduler in a blank state.
    */
-  init(): void;
+  public init(): void;
   /**
    * Initialize the scheduler from a previous state.
    */
-  init(
+  public init(
     dueDate: number,
     suspended: boolean,
     buried: boolean,
@@ -181,8 +181,10 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
   public answer(response: string): number;
   public answer(response: string, randomGenerator: RandomGenerator): number;
   public answer(response: string, randomGenerator?: RandomGenerator) {
-    // Save the state before answering to the history.
-    this.saveCurrentToHistory(this.sessionHistory);
+    // Save the state before answering to the history. The maximum history size is kept at 20.
+    if (this.saveCurrentToHistory(this.sessionHistory) > 20) {
+      shiftHistory(this.sessionHistory);
+    }
     // Reinitialize sessionUndoHistory to an empty array.
     this.sessionUndoHistory = [];
 
@@ -199,7 +201,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     this.dueDate = Date.now() + utils.DaysToMillis(interval);
     return interval;
   }
-
+  
   public undo() {
     if (this.sessionHistory.length === 0) return;
 
@@ -219,7 +221,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     if (info === undefined) return;
 
     const { dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval } = info;
-    this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval); 
+    this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval);
   }
 }
 
