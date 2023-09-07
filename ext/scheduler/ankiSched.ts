@@ -11,6 +11,16 @@ import type Scheduler from '../types/scheduler';
 type Status = 'learned' | 'learning' | 'relearning';
 type ActivationFunction = (input: number) => number;
 type RandomGenerator = () => number;
+type SchedulingInformation = {
+  buried: boolean;
+  dueDate: number;
+  easeFactor: number;
+  interval: number;
+  marked: boolean;
+  status: Status;
+  stepsIndex: number;
+  suspended: boolean;
+};
 
 const config = loadConfigs().schedulerSettings as JsonMap;
 const configNewCards = config.newCards as JsonMap;
@@ -23,28 +33,34 @@ const calculateIntervalWithFuzz = (
   randomGenerator: RandomGenerator,
 ) => interval + interval * activationFunction(interval) * randomGenerator();
 
+const deleteFromHistory = (history: SchedulingInformation[]) => history.pop();
+
 /**
  * Anki-based scheduler algorithm.
  */
 class AnkiScheduler extends SchedulerBase implements Scheduler {
-  private status;
+  private status = 'learning';
 
-  private steps_index;
+  private steps_index = 0;
 
-  private ease_factor;
+  private ease_factor = configNewCards.startingEase as number;
 
-  private interval;
+  private interval = NaN;
+
+  private sessionHistory: SchedulingInformation[] = [];
+
+  private sessionUndoHistory: SchedulingInformation[] = [];
 
   reps = 0;
 
   /**
-   * Construct a blank-state scheduler.
+   * Initialize the scheduler in a blank state.
    */
-  constructor();
+  init(): void;
   /**
-   * Load a previous state of the scheduler.
+   * Initialize the scheduler from a previous state.
    */
-  constructor(
+  init(
     dueDate: number,
     suspended: boolean,
     buried: boolean,
@@ -53,8 +69,8 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     stepsIndex: number,
     easeFactor: number,
     interval: number,
-  );
-  constructor(
+  ): void;
+  init(
     dueDate?: number,
     suspended?: boolean,
     buried?: boolean,
@@ -64,7 +80,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     easeFactor?: number,
     interval?: number,
   ) {
-    super(dueDate, suspended, buried, marked);
+    super.init(dueDate, suspended, buried, marked);
     this.status = status || 'learning';
     this.steps_index = stepsIndex || 0;
     this.ease_factor = easeFactor || (configNewCards.startingEase as number);
@@ -145,19 +161,65 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     throw new Error("status is not one of 'learning', 'learned' or 'relearning'");
   }
 
+  // Save current state of the scheduler to the history provided.
+  private saveCurrentToHistory(history: SchedulingInformation[]) {
+    const info: SchedulingInformation = {
+      buried: this.buried,
+      dueDate: this.dueDate,
+      easeFactor: this.ease_factor,
+      interval: this.interval,
+      marked: this.marked,
+      status: this.status as Status,
+      stepsIndex: this.steps_index,
+      suspended: this.suspended,
+    };
+    history.push(info);
+
+    return history.length;
+  }
+
   public answer(response: string): number;
   public answer(response: string, randomGenerator: RandomGenerator): number;
   public answer(response: string, randomGenerator?: RandomGenerator) {
+    // Save the state before answering to the history.
+    this.saveCurrentToHistory(this.sessionHistory);
+    // Reinitialize sessionUndoHistory to an empty array.
+    this.sessionUndoHistory = [];
+
     const fuzzApplied = config.calculateWithFuzz as boolean;
     const activationFunction: ActivationFunction = (input: number) =>
       0.15 / (input / 10 + 1) + 0.05;
     const generator = randomGenerator || (() => Math.random() * 2 - 1);
+
     const interval = fuzzApplied
       ? calculateIntervalWithFuzz(this.schedule(response), activationFunction, generator)
       : this.schedule(response);
+
     this.reps += 1;
     this.dueDate = Date.now() + utils.DaysToMillis(interval);
     return interval;
+  }
+
+  public undo() {
+    if (this.sessionHistory.length === 0) return;
+
+    this.saveCurrentToHistory(this.sessionUndoHistory);
+    const info = deleteFromHistory(this.sessionHistory);
+    if (info === undefined) return;
+
+    const { dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval } = info;
+    this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval);
+  }
+
+  public redo() {
+    if (this.sessionUndoHistory.length === 0) return;
+
+    this.saveCurrentToHistory(this.sessionHistory);
+    const info = deleteFromHistory(this.sessionUndoHistory);
+    if (info === undefined) return;
+
+    const { dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval } = info;
+    this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval); 
   }
 }
 

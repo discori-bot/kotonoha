@@ -1,15 +1,15 @@
 import * as utils from '../utils';
 
 class SchedulerBase {
-  public dueDate: number;
+  public dueDate = Date.now();
 
-  public suspended: boolean;
+  public suspended = false;
 
-  public marked: boolean;
+  public marked = false;
 
-  public buried: boolean;
+  public buried = false;
 
-  constructor(dueDate?: number, suspended?: boolean, buried?: boolean, marked?: boolean) {
+  public init(dueDate?: number, suspended?: boolean, buried?: boolean, marked?: boolean) {
     this.dueDate = dueDate || Date.now();
     this.suspended = suspended || false;
     this.buried = buried || false;
