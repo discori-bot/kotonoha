@@ -1,5 +1,5 @@
-  /**
- * Implementation of https://gist.github.com/riceissa/1ead1b9881ffbb48793565ce69d7dbdd for Discori
+/**
+ * Implementation of https://gist.github.com/riceissa/1ead1b9881ffbb48793565ce69d7dbdd for Discori.
  */
 
 import { type JsonMap } from '@iarna/toml';
@@ -23,16 +23,53 @@ const calculateIntervalWithFuzz = (
   randomGenerator: RandomGenerator,
 ) => interval + interval * activationFunction(interval) * randomGenerator();
 
+/**
+ * Anki-based scheduler algorithm.
+ */
 class AnkiScheduler extends SchedulerBase implements Scheduler {
-  private status: Status = 'learning';
+  private status;
 
-  private steps_index = 0;
+  private steps_index;
 
-  private ease_factor = configNewCards.startingEase as number;
+  private ease_factor;
 
-  private interval = NaN;
+  private interval;
 
   reps = 0;
+
+  /**
+   * Construct a blank-state scheduler.
+   */
+  constructor();
+  /**
+   * Load a previous state of the scheduler.
+   */
+  constructor(
+    dueDate: number,
+    suspended: boolean,
+    buried: boolean,
+    marked: boolean,
+    status: Status,
+    stepsIndex: number,
+    easeFactor: number,
+    interval: number,
+  );
+  constructor(
+    dueDate?: number,
+    suspended?: boolean,
+    buried?: boolean,
+    marked?: boolean,
+    status?: Status,
+    stepsIndex?: number,
+    easeFactor?: number,
+    interval?: number,
+  ) {
+    super(dueDate, suspended, buried, marked);
+    this.status = status || 'learning';
+    this.steps_index = stepsIndex || 0;
+    this.ease_factor = easeFactor || (configNewCards.startingEase as number);
+    this.interval = interval || NaN;
+  }
 
   private schedule(response: string) {
     const newSteps = configNewCards.newSteps as number[];

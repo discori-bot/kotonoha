@@ -9,11 +9,11 @@ class SchedulerBase {
 
   public buried: boolean;
 
-  constructor() {
-    this.dueDate = Date.now();
-    this.suspended = false;
-    this.buried = false;
-    this.marked = false;
+  constructor(dueDate?: number, suspended?: boolean, buried?: boolean, marked?: boolean) {
+    this.dueDate = dueDate || Date.now();
+    this.suspended = suspended || false;
+    this.buried = buried || false;
+    this.marked = marked || false;
   }
 
   public toggleBury() {
