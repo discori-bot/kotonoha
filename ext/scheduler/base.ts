@@ -21,7 +21,7 @@ class SchedulerBase {
     this.buried = !this.buried;
 
     if (this.buried) {
-      this.dueDate += waitTime;
+      this.dueDate = Math.max(this.dueDate, Date.now()) + waitTime;
       setTimeout(() => {
         this.buried = false;
       }, waitTime);
