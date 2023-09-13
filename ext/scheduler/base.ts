@@ -39,4 +39,6 @@ class SchedulerBase {
   }
 }
 
+export type RandomGenerator = () => number;
+export type Status = 'review' | 'learning' | 'relearning';
 export default SchedulerBase;

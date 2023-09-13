@@ -6,11 +6,10 @@ import { type JsonMap } from '@iarna/toml';
 import loadConfigs from '../../src/loaders/config';
 import * as utils from '../utils';
 import SchedulerBase from './base';
+import type { RandomGenerator, Status } from './base';
 import type Scheduler from '../types/scheduler';
 
-type Status = 'learned' | 'learning' | 'relearning';
 type ActivationFunction = (input: number) => number;
-type RandomGenerator = () => number;
 type SchedulingInformation = {
   buried: boolean;
   dueDate: number;
@@ -21,6 +20,7 @@ type SchedulingInformation = {
   stepsIndex: number;
   suspended: boolean;
 };
+type Rating = 'again' | 'hard' | 'good' | 'easy';
 
 const config = loadConfigs().schedulerSettings as JsonMap;
 const configNewCards = config.newCards as JsonMap;
@@ -87,10 +87,8 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     this.interval = interval || NaN;
   }
 
-  private schedule(response: string) {
+  private schedule(response: Rating): number {
     const newSteps = configNewCards.newSteps as number[];
-    if (!['again', 'hard', 'good', 'easy'].includes(response))
-      throw new Error("Only values among 'again', 'hard', 'good', or 'easy' are allowed");
 
     if (this.status === 'learning') {
       if (response === 'hard' || response === 'again') {
@@ -103,16 +101,16 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
           return utils.minuteToDays(newSteps[this.steps_index]);
 
         // graduated
-        this.status = 'learned';
+        this.status = 'review';
         this.interval = configNewCards.graduatingInterval as number;
         return this.interval;
       }
       if (response === 'easy') {
-        this.status = 'learned';
+        this.status = 'review';
         this.interval = configNewCards.easyInterval as number;
         return this.interval;
       }
-    } else if (this.status === 'learned') {
+    } else if (this.status === 'review') {
       const maxInterval = configReviews.maxInterval as number;
       const intervalModifier = configReviews.intervalModifier as number;
       if (response === 'again') {
@@ -154,11 +152,11 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
         if (this.steps_index < lapsesSteps.length)
           return utils.minuteToDays(lapsesSteps[this.steps_index]);
         // re-graduated
-        this.status = 'learned';
+        this.status = 'review';
         return this.interval;
       }
     }
-    throw new Error("status is not one of 'learning', 'learned' or 'relearning'");
+    throw new Error("status is not one of 'learning', 'review' or 'relearning'");
   }
 
   // Save current state of the scheduler to the history provided.
@@ -181,6 +179,9 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
   public answer(response: string): number;
   public answer(response: string, randomGenerator: RandomGenerator): number;
   public answer(response: string, randomGenerator?: RandomGenerator) {
+    if (response !== 'again' && response !== 'hard' && response !== 'good' && response !== 'easy')
+      throw new Error("Only values among 'again', 'hard', 'good', or 'easy' are allowed");
+
     // Save the state before answering to the history. The maximum history size is kept at 20.
     if (this.saveCurrentToHistory(this.sessionHistory) > 20) {
       shiftHistory(this.sessionHistory);
@@ -201,7 +202,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     this.dueDate = Date.now() + utils.DaysToMillis(interval);
     return interval;
   }
-  
+
   public undo() {
     if (this.sessionHistory.length === 0) return;
 
