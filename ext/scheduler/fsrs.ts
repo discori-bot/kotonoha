@@ -52,8 +52,6 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     easy: 4,
   };
 
-  private isReview = false;
-
   private interval = NaN;
 
   private status: Status = 'learning';
@@ -141,15 +139,15 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     this.convertStates(easeFactor, interval);
   }
 
-  private applyFuzz(input: number, randomGenerator: RandomGenerator) {
-    let ivl = input;
+  private applyFuzz(interval: number, randomGenerator: RandomGenerator) {
+    let ivl = interval;
     if (!this.enableFuzz || ivl < 2.5) return ivl;
     ivl = Math.round(ivl);
     let minIvl = Math.max(2, Math.round(ivl * 0.95 - 1));
     const maxIvl = Math.round(ivl * 1.05 + 1);
     const fuzzFactor = randomGenerator();
 
-    if (this.isReview) {
+    if (this.status === 'review') {
       if (ivl > this.interval) {
         minIvl = Math.max(minIvl, this.interval + 1);
       }
