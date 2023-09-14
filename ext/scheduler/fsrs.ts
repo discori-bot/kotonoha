@@ -54,7 +54,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
   skipDecks: string[] = [];
 
   // "Fuzz" is a small random delay to disassociate cards that often appear together.
-  enableFuzz = false;
+  enableFuzz = config.calculateWithFuzz as boolean;
 
   private params: Params;
 
@@ -165,16 +165,21 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
   }
 
   public fromAnkiScheduler(
-    _dueDate: number,
-    _suspended: boolean,
-    _buried: boolean,
-    _marked: boolean,
-    _status: Status,
-    _stepsIndex: number,
+    dueDate: number,
+    suspended: boolean,
+    buried: boolean,
+    marked: boolean,
+    status: Status,
+    stepsIndex: number,
     easeFactor: number,
     interval: number,
+    reviewTimestamp: number,
   ) {
-    this.convertStates(easeFactor, interval);
+    this.init(dueDate, suspended, buried, marked, status, stepsIndex, interval, reviewTimestamp, {
+      d: 0,
+      s: 0,
+    } as MemState);
+    if (status === 'review') this.convertStates(easeFactor, interval);
   }
 
   private applyFuzz(interval: number, randomGenerator: RandomGenerator) {
@@ -267,6 +272,8 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       throw new Error("Only values among 'again', 'hard', 'good', or 'easy' are allowed");
 
     if (this.status === 'learning') {
+      this.learningState.d = this.learningState.d || this.initDifficulty(response);
+      this.learningState.s = this.learningState.s || this.initStability(response);
       if (response === 'hard' || response === 'again') {
         this.steps_index = 0;
         return utils.minuteToDays(newSteps[this.steps_index]);
@@ -279,8 +286,6 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
 
         // graduated
         this.status = 'review';
-        this.learningState.d = this.initDifficulty(response);
-        this.learningState.s = this.initStability(response);
         this.interval = this.nextInterval(this.learningState.s, randomGenerator);
         return this.interval;
       }
@@ -328,6 +333,8 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       }
       return this.interval;
     } else if (this.status === 'relearning') {
+      this.learningState.d = this.learningState.d || this.initDifficulty(response);
+      this.learningState.s = this.learningState.s || this.initStability(response);
       const lapsesSteps = configLapses.lapsesSteps as number[];
       if (response === 'again' || response === 'hard') {
         this.steps_index = 0;

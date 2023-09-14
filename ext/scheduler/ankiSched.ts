@@ -16,6 +16,7 @@ type SchedulingInformation = {
   easeFactor: number;
   interval: number;
   marked: boolean;
+  reviewTimestamp: number;
   status: Status;
   stepsIndex: number;
   suspended: boolean;
@@ -71,6 +72,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     stepsIndex: number,
     easeFactor: number,
     interval: number,
+    reviewTimestamp: number,
   ): void;
   init(
     dueDate?: number,
@@ -81,12 +83,14 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     stepsIndex?: number,
     easeFactor?: number,
     interval?: number,
+    reviewTimestamp?: number,
   ) {
     super.init(dueDate, suspended, buried, marked);
     this.status = status || 'learning';
     this.steps_index = stepsIndex || 0;
     this.ease_factor = easeFactor || (configNewCards.startingEase as number);
     this.interval = interval || NaN;
+    this.reviewTimestamp = reviewTimestamp || NaN;
   }
 
   public exportSchedulingInformation(): SchedulingInformation {
@@ -99,6 +103,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       status: this.status,
       stepsIndex: this.steps_index,
       suspended: this.suspended,
+      reviewTimestamp: this.reviewTimestamp,
     };
   }
 
@@ -217,8 +222,28 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     const info = deleteFromHistory(this.sessionHistory);
     if (info === undefined) return;
 
-    const { dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval } = info;
-    this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval);
+    const {
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      easeFactor,
+      interval,
+      reviewTimestamp,
+    } = info;
+    this.init(
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      easeFactor,
+      interval,
+      reviewTimestamp,
+    );
   }
 
   public redo() {
@@ -228,8 +253,28 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     const info = deleteFromHistory(this.sessionUndoHistory);
     if (info === undefined) return;
 
-    const { dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval } = info;
-    this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval);
+    const {
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      easeFactor,
+      interval,
+      reviewTimestamp,
+    } = info;
+    this.init(
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      easeFactor,
+      interval,
+      reviewTimestamp,
+    );
   }
 
   public forget() {
