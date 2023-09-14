@@ -9,6 +9,9 @@ interface Scheduler {
 
   dueDate: number;
 
+  /**
+   * Turn this card back into a new card.
+   */
   forget(): void;
 
   /**
