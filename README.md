@@ -12,3 +12,7 @@
    ```
    pnpm start
    ```
+4. Run tests.
+   ```
+   pnpm test
+   ```
