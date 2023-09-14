@@ -8,21 +8,28 @@ interface Scheduler {
   buried: boolean;
 
   dueDate: number;
-  
+
+  forget(): void;
+
+  /**
+   * Initialize the scheduler in a blank state.
+   */
+  init(): void;
+
   marked: boolean;
 
   /**
    * Redo your previous undo. Does nothing if you did not previously undo a card.
    */
   redo(): void;
-  
+
   reps: number;
 
   suspended: boolean;
 
   /**
    * Bury / unbury this card. Burying the card hides it from review until the next day.
-  */
+   */
   toggleBury(): void;
 
   /**
@@ -32,14 +39,13 @@ interface Scheduler {
 
   /**
    * Suspend / unsuspend this card. Suspending the card hides it from review until you unsuspend it.
-  */
+   */
   toggleSuspend(): void;
 
   /**
    * Undo the previous answer to this card. Up to 20 answers are kept in the history. Does nothing if nothing is present in the history.
    */
   undo(): void;
-
 }
 
 export default Scheduler;

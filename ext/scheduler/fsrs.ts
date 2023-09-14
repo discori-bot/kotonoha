@@ -17,6 +17,18 @@ export type Params = {
   w: Weights;
 };
 
+type SchedulingInformation = {
+  buried: boolean;
+  dueDate: number;
+  interval: number;
+  learningState: MemState;
+  marked: boolean;
+  reviewTimestamp: number;
+  status: Status;
+  stepsIndex: number;
+  suspended: boolean;
+};
+
 type MemState = {
   d: number; // Difficulty
   s: number; // Stability
@@ -29,6 +41,9 @@ type Weights = number[];
 const config = loadConfigs().schedulerSettings as JsonMap;
 const configNewCards = config.newCards as JsonMap;
 const configLapses = config.lapses as JsonMap;
+
+const deleteFromHistory = (history: SchedulingInformation[]) => history.pop();
+const shiftHistory = (history: SchedulingInformation[]) => history.shift();
 
 const constrainDifficulty = (difficulty: number) =>
   Math.min(Math.max(+difficulty.toFixed(2), 1), 10);
@@ -59,6 +74,10 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
   private steps_index = 0;
 
   private reviewTimestamp = NaN;
+
+  private sessionHistory: SchedulingInformation[] = [];
+
+  private sessionUndoHistory: SchedulingInformation[] = [];
 
   reps = 0;
 
@@ -124,6 +143,25 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       d: 0,
     };
     this.reviewTimestamp = reviewTimestamp || NaN;
+  }
+
+  public exportSchedulingInformation(): SchedulingInformation {
+    return {
+      dueDate: this.dueDate,
+      suspended: this.suspended,
+      buried: this.buried,
+      marked: this.marked,
+      status: this.status,
+      stepsIndex: this.steps_index,
+      interval: this.interval,
+      reviewTimestamp: this.reviewTimestamp,
+      learningState: this.learningState,
+    };
+  }
+
+  // Save current state of the scheduler to the history provided.
+  private saveCurrentToHistory(history: SchedulingInformation[]) {
+    return history.push(this.exportSchedulingInformation());
   }
 
   public fromAnkiScheduler(
@@ -309,24 +347,95 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     throw new Error("status is not one of 'learning', 'review' or 'relearning'");
   }
 
+  private saveState() {
+    // Save the state before answering to the history. The maximum history size is kept at 20.
+    if (this.saveCurrentToHistory(this.sessionHistory) > 20) {
+      shiftHistory(this.sessionHistory);
+    }
+    // Reinitialize sessionUndoHistory to an empty array.
+    this.sessionUndoHistory = [];
+  }
+
   public answer(response: string): number;
   public answer(response: string, randomGenerator: RandomGenerator): number;
   public answer(response: string, randomGenerator?: RandomGenerator) {
     if (response !== 'again' && response !== 'hard' && response !== 'good' && response !== 'easy')
       throw new Error("Only values among 'again', 'hard', 'good', or 'easy' are allowed");
-    const interval = this.schedule(response, randomGenerator || Math.random);
-    this.reviewTimestamp = Date.now();
+    this.saveState();
 
+    const interval = this.schedule(response, randomGenerator || Math.random);
+
+    this.reviewTimestamp = Date.now();
     this.dueDate = this.reviewTimestamp + utils.DaysToMillis(interval);
+    this.reps += 1;
     return interval;
   }
 
-  public redo() {
-    //
+  public undo() {
+    if (this.sessionHistory.length === 0) return;
+
+    this.saveCurrentToHistory(this.sessionUndoHistory);
+    const info = deleteFromHistory(this.sessionHistory);
+    if (info === undefined) return;
+
+    const {
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      interval,
+      reviewTimestamp,
+      learningState,
+    } = info;
+    this.init(
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      interval,
+      reviewTimestamp,
+      learningState,
+    );
   }
 
-  public undo() {
-    //
+  public redo() {
+    if (this.sessionUndoHistory.length === 0) return;
+
+    this.saveCurrentToHistory(this.sessionHistory);
+    const info = deleteFromHistory(this.sessionUndoHistory);
+    if (info === undefined) return;
+
+    const {
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      interval,
+      reviewTimestamp,
+      learningState,
+    } = info;
+    this.init(
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      interval,
+      reviewTimestamp,
+      learningState,
+    );
+  }
+
+  public forget() {
+    this.saveState();
+    this.init();
   }
 }
 

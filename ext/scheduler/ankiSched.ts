@@ -39,13 +39,15 @@ const shiftHistory = (history: SchedulingInformation[]) => history.shift();
  * Anki-based scheduler algorithm.
  */
 class AnkiScheduler extends SchedulerBase implements Scheduler {
-  private status = 'learning';
+  private status: Status = 'learning';
 
   private steps_index = 0;
 
   private ease_factor = configNewCards.startingEase as number;
 
   private interval = NaN;
+
+  private reviewTimestamp = NaN;
 
   private sessionHistory: SchedulingInformation[] = [];
 
@@ -85,6 +87,24 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     this.steps_index = stepsIndex || 0;
     this.ease_factor = easeFactor || (configNewCards.startingEase as number);
     this.interval = interval || NaN;
+  }
+
+  public exportSchedulingInformation(): SchedulingInformation {
+    return {
+      buried: this.buried,
+      dueDate: this.dueDate,
+      easeFactor: this.ease_factor,
+      interval: this.interval,
+      marked: this.marked,
+      status: this.status,
+      stepsIndex: this.steps_index,
+      suspended: this.suspended,
+    };
+  }
+
+  // Save current state of the scheduler to the history provided.
+  private saveCurrentToHistory(history: SchedulingInformation[]) {
+    return history.push(this.exportSchedulingInformation());
   }
 
   private schedule(response: Rating): number {
@@ -159,21 +179,13 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     throw new Error("status is not one of 'learning', 'review' or 'relearning'");
   }
 
-  // Save current state of the scheduler to the history provided.
-  private saveCurrentToHistory(history: SchedulingInformation[]) {
-    const info: SchedulingInformation = {
-      buried: this.buried,
-      dueDate: this.dueDate,
-      easeFactor: this.ease_factor,
-      interval: this.interval,
-      marked: this.marked,
-      status: this.status as Status,
-      stepsIndex: this.steps_index,
-      suspended: this.suspended,
-    };
-    history.push(info);
-
-    return history.length;
+  private saveState() {
+    // Save the state before answering to the history. The maximum history size is kept at 20.
+    if (this.saveCurrentToHistory(this.sessionHistory) > 20) {
+      shiftHistory(this.sessionHistory);
+    }
+    // Reinitialize sessionUndoHistory to an empty array.
+    this.sessionUndoHistory = [];
   }
 
   public answer(response: string): number;
@@ -181,13 +193,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
   public answer(response: string, randomGenerator?: RandomGenerator) {
     if (response !== 'again' && response !== 'hard' && response !== 'good' && response !== 'easy')
       throw new Error("Only values among 'again', 'hard', 'good', or 'easy' are allowed");
-
-    // Save the state before answering to the history. The maximum history size is kept at 20.
-    if (this.saveCurrentToHistory(this.sessionHistory) > 20) {
-      shiftHistory(this.sessionHistory);
-    }
-    // Reinitialize sessionUndoHistory to an empty array.
-    this.sessionUndoHistory = [];
+    this.saveState();
 
     const fuzzApplied = config.calculateWithFuzz as boolean;
     const activationFunction: ActivationFunction = (input: number) =>
@@ -198,8 +204,9 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       ? calculateIntervalWithFuzz(this.schedule(response), activationFunction, generator)
       : this.schedule(response);
 
+    this.reviewTimestamp = Date.now();
+    this.dueDate = this.reviewTimestamp + utils.DaysToMillis(interval);
     this.reps += 1;
-    this.dueDate = Date.now() + utils.DaysToMillis(interval);
     return interval;
   }
 
@@ -223,6 +230,11 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
 
     const { dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval } = info;
     this.init(dueDate, suspended, buried, marked, status, stepsIndex, easeFactor, interval);
+  }
+
+  public forget() {
+    this.saveState();
+    this.init();
   }
 }
 
