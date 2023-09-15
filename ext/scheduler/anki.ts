@@ -3,7 +3,7 @@
  */
 
 import { type JsonMap } from '@iarna/toml';
-import loadConfigs from '../../src/loaders/config';
+import loadConfigs from '../loaders/config';
 import * as utils from '../utils';
 import SchedulerBase from './base';
 import type { RandomGenerator, Status } from './base';

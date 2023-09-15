@@ -1,4 +1,4 @@
-import AnkiScheduler from './scheduler/ankiSched';
+import AnkiScheduler from './scheduler/anki';
 
 import FSRSScheduler from './scheduler/fsrs';
 
