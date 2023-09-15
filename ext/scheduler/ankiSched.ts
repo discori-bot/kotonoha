@@ -15,6 +15,7 @@ type SchedulingInformation = {
   dueDate: number;
   easeFactor: number;
   interval: number;
+  lapseCounter: number;
   marked: boolean;
   reviewTimestamp: number;
   status: Status;
@@ -73,6 +74,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     easeFactor: number,
     interval: number,
     reviewTimestamp: number,
+    lapseCounter: number,
   ): void;
   init(
     dueDate?: number,
@@ -84,8 +86,9 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     easeFactor?: number,
     interval?: number,
     reviewTimestamp?: number,
+    lapseCounter?: number,
   ) {
-    super.init(dueDate, suspended, buried, marked);
+    super.init(dueDate, suspended, buried, marked, lapseCounter);
     this.status = status || 'learning';
     this.steps_index = stepsIndex || 0;
     this.ease_factor = easeFactor || (configNewCards.startingEase as number);
@@ -104,6 +107,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       stepsIndex: this.steps_index,
       suspended: this.suspended,
       reviewTimestamp: this.reviewTimestamp,
+      lapseCounter: this.lapseCounter,
     };
   }
 
@@ -167,6 +171,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
         return Math.min(maxInterval, this.interval);
       }
     } else if (this.status === 'relearning') {
+      this.lapseCounter += 1;
       const lapsesSteps = configLapses.lapsesSteps as number[];
       if (response === 'again' || response === 'hard') {
         this.steps_index = 0;
@@ -232,6 +237,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       easeFactor,
       interval,
       reviewTimestamp,
+      lapseCounter,
     } = info;
     this.init(
       dueDate,
@@ -243,6 +249,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       easeFactor,
       interval,
       reviewTimestamp,
+      lapseCounter,
     );
   }
 
@@ -263,6 +270,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       easeFactor,
       interval,
       reviewTimestamp,
+      lapseCounter,
     } = info;
     this.init(
       dueDate,
@@ -274,12 +282,17 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       easeFactor,
       interval,
       reviewTimestamp,
+      lapseCounter,
     );
   }
 
   public forget() {
     this.saveState();
     this.init();
+  }
+
+  public isLeech() {
+    return this.lapseCounter > (configLapses.leechThreshold as number);
   }
 }
 

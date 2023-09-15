@@ -19,6 +19,10 @@ interface Scheduler {
    */
   init(): void;
 
+  isLeech(): boolean;
+
+  lapseCounter: number;
+
   marked: boolean;
 
   /**

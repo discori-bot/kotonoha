@@ -21,6 +21,7 @@ type SchedulingInformation = {
   buried: boolean;
   dueDate: number;
   interval: number;
+  lapseCounter: number;
   learningState: MemState;
   marked: boolean;
   reviewTimestamp: number;
@@ -122,6 +123,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     interval: number,
     reviewTimestamp: number,
     learningState: MemState,
+    lapseCounter: number,
   ): void;
   init(
     dueDate?: number,
@@ -133,8 +135,9 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     interval?: number,
     reviewTimestamp?: number,
     learningState?: MemState,
+    lapseCounter?: number,
   ) {
-    super.init(dueDate, suspended, buried, marked);
+    super.init(dueDate, suspended, buried, marked, lapseCounter);
     this.status = status || 'learning';
     this.steps_index = stepsIndex || 0;
     this.interval = interval || NaN;
@@ -156,6 +159,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       interval: this.interval,
       reviewTimestamp: this.reviewTimestamp,
       learningState: this.learningState,
+      lapseCounter: this.lapseCounter,
     };
   }
 
@@ -174,11 +178,23 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     easeFactor: number,
     interval: number,
     reviewTimestamp: number,
+    lapseCounter: number,
   ) {
-    this.init(dueDate, suspended, buried, marked, status, stepsIndex, interval, reviewTimestamp, {
-      d: 0,
-      s: 0,
-    } as MemState);
+    this.init(
+      dueDate,
+      suspended,
+      buried,
+      marked,
+      status,
+      stepsIndex,
+      interval,
+      reviewTimestamp,
+      {
+        d: 0,
+        s: 0,
+      } as MemState,
+      lapseCounter,
+    );
     if (status === 'review') this.convertStates(easeFactor, interval);
   }
 
@@ -333,6 +349,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       }
       return this.interval;
     } else if (this.status === 'relearning') {
+      this.lapseCounter += 1;
       this.learningState.d = this.learningState.d || this.initDifficulty(response);
       this.learningState.s = this.learningState.s || this.initStability(response);
       const lapsesSteps = configLapses.lapsesSteps as number[];
@@ -395,6 +412,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       interval,
       reviewTimestamp,
       learningState,
+      lapseCounter,
     } = info;
     this.init(
       dueDate,
@@ -406,6 +424,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       interval,
       reviewTimestamp,
       learningState,
+      lapseCounter,
     );
   }
 
@@ -426,6 +445,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       interval,
       reviewTimestamp,
       learningState,
+      lapseCounter,
     } = info;
     this.init(
       dueDate,
@@ -437,12 +457,17 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       interval,
       reviewTimestamp,
       learningState,
+      lapseCounter,
     );
   }
 
   public forget() {
     this.saveState();
     this.init();
+  }
+
+  public isLeech() {
+    return this.lapseCounter > (configLapses.leechThreshold as number);
   }
 }
 
