@@ -1,7 +1,9 @@
 import * as utils from '../utils';
 
 class SchedulerBase {
-  public dueDate = Date.now();
+  public reviewTimestamp = new Date();
+
+  public nextReviewTimestamp = new Date();
 
   public suspended = false;
 
@@ -11,8 +13,16 @@ class SchedulerBase {
 
   public lapseCounter = 0;
 
-  public init(dueDate?: number, suspended?: boolean, buried?: boolean, marked?: boolean, lapseCounter?: number) {
-    this.dueDate = dueDate || Date.now();
+  public init(
+    reviewTimestamp?: Date,
+    nextReviewTimestamp?: Date,
+    suspended?: boolean,
+    buried?: boolean,
+    marked?: boolean,
+    lapseCounter?: number,
+  ) {
+    this.reviewTimestamp = reviewTimestamp || new Date();
+    this.nextReviewTimestamp = nextReviewTimestamp || new Date();
     this.suspended = suspended || false;
     this.buried = buried || false;
     this.marked = marked || false;
@@ -20,16 +30,18 @@ class SchedulerBase {
   }
 
   public toggleBury() {
-    const waitTime = utils.DaysToMillis(1);
+    const waitTime = utils.daysToMillis(1);
     this.buried = !this.buried;
 
     if (this.buried) {
-      this.dueDate = Math.max(this.dueDate, Date.now()) + waitTime;
+      this.nextReviewTimestamp = new Date(
+        Math.max(this.nextReviewTimestamp.getTime(), Date.now()) + waitTime,
+      );
       setTimeout(() => {
         this.buried = false;
       }, waitTime);
     } else {
-      this.dueDate -= waitTime;
+      this.nextReviewTimestamp = new Date(this.nextReviewTimestamp.getTime() - waitTime);
     }
   }
 

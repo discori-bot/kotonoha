@@ -34,7 +34,7 @@ const yomu: Card = new AnkiCard('読む', {
   JMDICT: `cashew (Anacardium occidentale)
   acajou`,
 });
-yomu.dueDate = mockDueDate.getTime();
+yomu.nextReviewTimestamp = mockDueDate;
 const mockCards = [yomu, yomu, yomu, yomu, yomu];
 
 const replyOrEditCard = async <T extends Message | ChatInputCommandInteraction>(
@@ -61,21 +61,21 @@ const handleResponse = async <T extends Message | ChatInputCommandInteraction>(
   if (response === 'bury') {
     card?.toggleBury();
     // Reply with the formatted dueDate for testing
-    if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+    if (card?.nextReviewTimestamp) await interaction.reply(card.nextReviewTimestamp.toString());
     return;
   }
 
   if (response === 'suspend') {
     card?.toggleSuspend();
     // Reply with the formatted dueDate for testing
-    if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+    if (card?.nextReviewTimestamp) await interaction.reply(card.nextReviewTimestamp.toString());
     return;
   }
 
   if (response === 'mark') {
     card?.toggleMark();
     // Reply with the formatted dueDate for testing
-    if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+    if (card?.nextReviewTimestamp) await interaction.reply(card.nextReviewTimestamp.toString());
     return;
   }
 
@@ -87,11 +87,13 @@ const handleResponse = async <T extends Message | ChatInputCommandInteraction>(
 
   card?.answer(answer);
   // Reply with the formatted dueDate for testing
-  if (card?.dueDate) await interaction.reply(new Date(card.dueDate).toString());
+  if (card?.nextReviewTimestamp) await interaction.reply(card.nextReviewTimestamp.toString());
 };
 
 const execute: Execute = async (interaction) => {
-  const dueCards = mockCards.filter((card) => Date.now() > card.dueDate && !card.suspended);
+  const dueCards = mockCards.filter(
+    (card) => Date.now() > card.nextReviewTimestamp.getTime() && !card.suspended,
+  );
   if (dueCards.length === 0) {
     await interaction.reply({
       embeds: [new EmbedBuilder().setTitle('Review').setDescription('No more to review!')],

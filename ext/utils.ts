@@ -1,6 +1,8 @@
 export const minuteToDays = (minutes: number) => minutes / (60 * 24);
 
-export const DaysToMillis = (days: number) => days * (24 * 60 * 60 * 1000);
+export const daysToMillis = (days: number) => days * (24 * 60 * 60 * 1000);
+
+export const millisToDays = (millis: number) => millis / (1000 * 60 * 60 * 24);
 
 export const humanFriendlyTime = (days: number) => {
   if (days === null) return days;

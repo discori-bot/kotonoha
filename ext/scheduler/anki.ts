@@ -3,7 +3,7 @@
  */
 
 import { type JsonMap } from '@iarna/toml';
-import loadConfigs from '../loaders/config';
+import loadConfigs from '../../src/loaders/config';
 import * as utils from '../utils';
 import SchedulerBase from './base';
 import type { RandomGenerator, Status } from './base';
@@ -12,12 +12,12 @@ import type Scheduler from '../types/scheduler';
 type ActivationFunction = (input: number) => number;
 type SchedulingInformation = {
   buried: boolean;
-  dueDate: number;
   easeFactor: number;
   interval: number;
   lapseCounter: number;
   marked: boolean;
-  reviewTimestamp: number;
+  nextReviewTimestamp: Date;
+  reviewTimestamp: Date;
   status: Status;
   stepsIndex: number;
   suspended: boolean;
@@ -49,8 +49,6 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
 
   private interval = NaN;
 
-  private reviewTimestamp = NaN;
-
   private sessionHistory: SchedulingInformation[] = [];
 
   private sessionUndoHistory: SchedulingInformation[] = [];
@@ -65,7 +63,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
    * Initialize the scheduler from a previous state.
    */
   public init(
-    dueDate: number,
+    nextReviewTimestamp: Date,
     suspended: boolean,
     buried: boolean,
     marked: boolean,
@@ -73,11 +71,11 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     stepsIndex: number,
     easeFactor: number,
     interval: number,
-    reviewTimestamp: number,
+    reviewTimestamp: Date,
     lapseCounter: number,
   ): void;
   init(
-    dueDate?: number,
+    nextReviewTimestamp?: Date,
     suspended?: boolean,
     buried?: boolean,
     marked?: boolean,
@@ -85,21 +83,21 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     stepsIndex?: number,
     easeFactor?: number,
     interval?: number,
-    reviewTimestamp?: number,
+    reviewTimestamp?: Date,
     lapseCounter?: number,
   ) {
-    super.init(dueDate, suspended, buried, marked, lapseCounter);
+    super.init(reviewTimestamp, nextReviewTimestamp, suspended, buried, marked, lapseCounter);
     this.status = status || 'learning';
     this.steps_index = stepsIndex || 0;
     this.ease_factor = easeFactor || (configNewCards.startingEase as number);
     this.interval = interval || NaN;
-    this.reviewTimestamp = reviewTimestamp || NaN;
+    this.reviewTimestamp = reviewTimestamp || new Date();
   }
 
   public exportSchedulingInformation(): SchedulingInformation {
     return {
       buried: this.buried,
-      dueDate: this.dueDate,
+      nextReviewTimestamp: this.nextReviewTimestamp,
       easeFactor: this.ease_factor,
       interval: this.interval,
       marked: this.marked,
@@ -214,8 +212,8 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       ? calculateIntervalWithFuzz(this.schedule(response), activationFunction, generator)
       : this.schedule(response);
 
-    this.reviewTimestamp = Date.now();
-    this.dueDate = this.reviewTimestamp + utils.DaysToMillis(interval);
+    this.reviewTimestamp = new Date();
+    this.reviewTimestamp.setTime(this.reviewTimestamp.getTime() + utils.daysToMillis(interval));
     this.reps += 1;
     return interval;
   }
@@ -228,7 +226,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     if (info === undefined) return;
 
     const {
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -240,7 +238,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       lapseCounter,
     } = info;
     this.init(
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -261,7 +259,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
     if (info === undefined) return;
 
     const {
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -273,7 +271,7 @@ class AnkiScheduler extends SchedulerBase implements Scheduler {
       lapseCounter,
     } = info;
     this.init(
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,

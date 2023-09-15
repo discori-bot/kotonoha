@@ -19,12 +19,12 @@ export type Params = {
 
 type SchedulingInformation = {
   buried: boolean;
-  dueDate: number;
   interval: number;
   lapseCounter: number;
   learningState: MemState;
   marked: boolean;
-  reviewTimestamp: number;
+  nextReviewTimestamp: Date;
+  reviewTimestamp: Date;
   status: Status;
   stepsIndex: number;
   suspended: boolean;
@@ -74,8 +74,6 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
 
   private steps_index = 0;
 
-  private reviewTimestamp = NaN;
-
   private sessionHistory: SchedulingInformation[] = [];
 
   private sessionUndoHistory: SchedulingInformation[] = [];
@@ -114,30 +112,30 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
    * Initialize the scheduler from a previous state.
    */
   public init(
-    dueDate: number,
+    nextReviewTimestamp: Date,
     suspended: boolean,
     buried: boolean,
     marked: boolean,
     status: Status,
     stepsIndex: number,
     interval: number,
-    reviewTimestamp: number,
+    reviewTimestamp: Date,
     learningState: MemState,
     lapseCounter: number,
   ): void;
   init(
-    dueDate?: number,
+    nextReviewTimestamp?: Date,
     suspended?: boolean,
     buried?: boolean,
     marked?: boolean,
     status?: Status,
     stepsIndex?: number,
     interval?: number,
-    reviewTimestamp?: number,
+    reviewTimestamp?: Date,
     learningState?: MemState,
     lapseCounter?: number,
   ) {
-    super.init(dueDate, suspended, buried, marked, lapseCounter);
+    super.init(reviewTimestamp, nextReviewTimestamp, suspended, buried, marked, lapseCounter);
     this.status = status || 'learning';
     this.steps_index = stepsIndex || 0;
     this.interval = interval || NaN;
@@ -145,12 +143,11 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       s: 0,
       d: 0,
     };
-    this.reviewTimestamp = reviewTimestamp || NaN;
   }
 
   public exportSchedulingInformation(): SchedulingInformation {
     return {
-      dueDate: this.dueDate,
+      nextReviewTimestamp: this.nextReviewTimestamp,
       suspended: this.suspended,
       buried: this.buried,
       marked: this.marked,
@@ -169,7 +166,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
   }
 
   public fromAnkiScheduler(
-    dueDate: number,
+    nextReviewTimestamp: Date,
     suspended: boolean,
     buried: boolean,
     marked: boolean,
@@ -177,11 +174,11 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     stepsIndex: number,
     easeFactor: number,
     interval: number,
-    reviewTimestamp: number,
+    reviewTimestamp: Date,
     lapseCounter: number,
   ) {
     this.init(
-      dueDate,
+    nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -315,7 +312,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     } else if (this.status === 'review') {
       const currentInterval = Number.isNaN(this.reviewTimestamp)
         ? this.interval
-        : Math.max(this.interval, Date.now() - this.reviewTimestamp);
+        : Math.max(this.interval, utils.millisToDays(Date.now() - this.reviewTimestamp.getTime()));
 
       const currentD = this.learningState.d;
       const currentS = this.learningState.s;
@@ -389,8 +386,8 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
 
     const interval = this.schedule(response, randomGenerator || Math.random);
 
-    this.reviewTimestamp = Date.now();
-    this.dueDate = this.reviewTimestamp + utils.DaysToMillis(interval);
+    this.reviewTimestamp = new Date();
+    this.nextReviewTimestamp = new Date(this.reviewTimestamp.getTime() + utils.daysToMillis(interval));
     this.reps += 1;
     return interval;
   }
@@ -403,7 +400,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     if (info === undefined) return;
 
     const {
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -415,7 +412,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       lapseCounter,
     } = info;
     this.init(
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -436,7 +433,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
     if (info === undefined) return;
 
     const {
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,
@@ -448,7 +445,7 @@ class FSRSScheduler extends SchedulerBase implements Scheduler {
       lapseCounter,
     } = info;
     this.init(
-      dueDate,
+      nextReviewTimestamp,
       suspended,
       buried,
       marked,

@@ -7,8 +7,6 @@ interface Scheduler {
 
   buried: boolean;
 
-  dueDate: number;
-
   /**
    * Turn this card back into a new card.
    */
@@ -25,12 +23,16 @@ interface Scheduler {
 
   marked: boolean;
 
+  nextReviewTimestamp: Date;
+
   /**
    * Redo your previous undo. Does nothing if you did not previously undo a card.
    */
   redo(): void;
 
   reps: number;
+
+  reviewTimestamp: Date;
 
   suspended: boolean;
 

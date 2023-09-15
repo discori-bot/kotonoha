@@ -10,5 +10,5 @@
     "useUnknownInCatchVariables": false,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*", "./ext/**/*"]
+  "include": ["./src/**/*", "./ext/**/*", "jest.config.ts"]
 }
